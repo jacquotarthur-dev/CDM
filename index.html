@@ -96,6 +96,9 @@ font-family:sans-serif;
 font-size:14px;
 border-radius:20px;
 z-index:20;
+
+/* AJOUT IMPORTANT */
+display:none;
 }
 
 </style>
@@ -489,7 +492,13 @@ animation.style.display = "block";
 animation.onended = () => {
 
 animation.style.display = "none";
+
 showMedia(mediaToShow);
+
+// 👇 afficher le cooldown ici seulement
+document.getElementById("cooldown").style.display = "block";
+
+};
 
 animation.muted = true;
 animation.playsInline = true;
