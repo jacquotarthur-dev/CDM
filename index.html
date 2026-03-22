@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>NFC CDM</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+<style>
+
+/* RESET + NO SCROLL */
+html, body {
+margin:0;
+padding:0;
+overflow:hidden;
+background:black;
+height:100%;
+}
+
+/* CONTAINER MEDIA */
+#container {
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:1;
+}
+
+#container img,
+#container video {
+width:100%;
+height:100%;
+object-fit:cover;
+opacity:0;
+transition:opacity 0.5s ease;
+}
+
+/* START SCREEN */
+#startScreen {
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:black;
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:sans-serif;
+font-size:18px;
+z-index:10;
+}
+
+/* ANIMATION OVERLAY */
+#animation {
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:5;
+display:none;
+}
+
+/* COOLDOWN UI */
+#cooldown {
+position:fixed;
+bottom:30px;
+left:50%;
+transform:translateX(-50%);
+width:33vw;
+max-width:400px;
+text-align:center;
+padding:10px 20px;
+background:rgba(0,0,0,0.6);
+backdrop-filter:blur(6px);
+color:white;
+font-family:sans-serif;
+font-size:14px;
+border-radius:20px;
+z-index:20;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="startScreen">Tap to reveal</div>
+
+<div id="container"></div>
+
+<video id="animation" autoplay muted playsinline></video>
+
+<div id="cooldown">
+Prochaine révélation dans : <span id="timer">60</span>s
+</div>
+
+<script>
+
+// ===== CONFIG =====
+const cooldown = 60000;
+
+// ===== ELEMENTS =====
+const startScreen = document.getElementById("startScreen");
+const container = document.getElementById("container");
+const animation = document.getElementById("animation");
+const timerElement = document.getElementById("timer");
+
+// ===== GENERATION MEDIA =====
+const medias = [];
+
+// IMAGES (adapter selon votre nombre)
+for (let i = 1; i <= 83; i++) {
+  medias.push(i + "_C1.webp");
+}
+
+// EXEMPLES (à adapter)
+for (let i = 84; i <= 120; i++) {
+  medias.push(i + "_C2.webp");
+}
+
+for (let i = 121; i <= 140; i++) {
+  medias.push(i + "_C3.mp4");
+}
+
+// ===== FUNCTIONS =====
+
+function showMedia(file){
+
+container.innerHTML = "";
+
+if(file.endsWith(".mp4")){
+
+const video = document.createElement("video");
+video.src = file;
+video.autoplay = true;
+video.loop = true;
+video.playsInline = true;
+video.controls = true;
+video.style.opacity = 0;
+
+container.appendChild(video);
+
+// fade in
+setTimeout(() => {
+video.style.opacity = 1;
+}, 50);
+
+}else{
+
+const img = document.createElement("img");
+img.src = file;
+img.style.opacity = 0;
+
+container.appendChild(img);
+
+// fade in
+setTimeout(() => {
+img.style.opacity = 1;
+}, 50);
+
+}
+
+}
+
+function startTimer(startTime){
+
+function update(){
+
+const elapsed = Date.now() - startTime;
+const remaining = Math.max(0, Math.ceil((cooldown - elapsed)/1000));
+
+timerElement.textContent = remaining;
+
+}
+
+update();
+setInterval(update, 1000);
+
+}
+
+// ===== CLICK ACTION =====
+
+startScreen.addEventListener("click", () => {
+
+let savedMedia = localStorage.getItem("media");
+let savedTime = localStorage.getItem("media_time");
+
+let mediaToShow;
+let startTime;
+
+// ===== COOLDOWN CHECK =====
+if(savedMedia && savedTime && (Date.now() - savedTime < cooldown)){
+
+mediaToShow = savedMedia;
+startTime = parseInt(savedTime);
+
+}else{
+
+mediaToShow = medias[Math.floor(Math.random() * medias.length)];
+startTime = Date.now();
+
+localStorage.setItem("media", mediaToShow);
+localStorage.setItem("media_time", startTime);
+
+}
+
+// ===== DETECT CLASS =====
+let animationFile;
+
+if(mediaToShow.includes("_C1")) animationFile = "animation1.mp4";
+if(mediaToShow.includes("_C2")) animationFile = "animation2.mp4";
+if(mediaToShow.includes("_C3")) animationFile = "animation3.mp4";
+
+// ===== DISPLAY =====
+startScreen.style.display = "none";
+
+// ===== PLAY ANIMATION =====
+animation.src = animationFile;
+animation.style.display = "block";
+
+animation.onended = () => {
+
+animation.style.display = "none";
+showMedia(mediaToShow);
+
+animation.muted = true;
+animation.playsInline = true;
+
+};
+
+// ===== START TIMER =====
+startTimer(startTime);
+
+});
+
+</script>
+
+</body>
+</html>
