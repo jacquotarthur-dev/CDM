@@ -58,7 +58,8 @@ background:black;
 display:flex;
 align-items:center;
 justify-content:center;
-z-index:1000; /* 🔥 très important */
+z-index:9999;
+pointer-events: auto;
 }
 
 #startImage {
@@ -98,6 +99,12 @@ border-radius:20px;
 z-index:2000;
 display:none;
 pointer-events:none;
+}
+
+#container,
+#animation,
+#cooldown {
+pointer-events: none;
 }
 
 </style>
@@ -452,11 +459,12 @@ setInterval(update, 1000);
 
 
 startScreen.addEventListener("click", () => {
+startScreen.style.display = "none";
+document.getElementById("container").style.pointerEvents = "auto";
 
 animation.style.display = "none";
 animation.pause();
 
-startScreen.style.display = "none";
 
 let savedMedia = localStorage.getItem("media");
 let savedTime = localStorage.getItem("media_time");
