@@ -121,10 +121,6 @@ Prochain Malaise dans : <span id="timer">60</span>s
 
 <script>
 
-document.getElementById("container").style.display = "none";
-document.getElementById("animation").style.display = "none";
-document.getElementById("cooldown").style.display = "none";
-
 // ===== CONFIG =====
 const cooldown = 60000;
 
@@ -456,14 +452,9 @@ setInterval(update, 1000);
 // ===== CLICK ACTION =====
 
 
-
-
 startScreen.addEventListener("click", () => {
-startScreen.style.pointerEvents = "none";
 
 startScreen.style.display = "none";
-container.style.display = "flex";
-animation.style.display = "block";
 
 let savedMedia = localStorage.getItem("media");
 let savedTime = localStorage.getItem("media_time");
@@ -471,48 +462,38 @@ let savedTime = localStorage.getItem("media_time");
 let mediaToShow;
 let startTime;
 
-// ===== COOLDOWN CHECK =====
 if(savedMedia && savedTime && (Date.now() - savedTime < cooldown)){
-
 mediaToShow = savedMedia;
 startTime = parseInt(savedTime);
-
 }else{
-
 mediaToShow = medias[Math.floor(Math.random() * medias.length)];
 startTime = Date.now();
-
 localStorage.setItem("media", mediaToShow);
 localStorage.setItem("media_time", startTime);
-
 }
 
-// ===== DETECT CLASS =====
 let animationFile;
 
 if(mediaToShow.includes("_C1")) animationFile = "animation1.mp4";
 if(mediaToShow.includes("_C2")) animationFile = "animation2.mp4";
 if(mediaToShow.includes("_C3")) animationFile = "animation3.mp4";
 
-// ===== DISPLAY =====
-startScreen.style.display = "none";
-
-// ===== PLAY ANIMATION =====
 animation.src = animationFile;
 animation.style.display = "block";
 
 animation.onended = () => {
 
+animation.style.display = "none";
 
 showMedia(mediaToShow);
-  
-// 👇 afficher le cooldown ici seulement
+
 document.getElementById("cooldown").style.display = "block";
 
-// ✅ AJOUT ICI
 startTimer(startTime);
 
 };
+
+});
 
 animation.muted = true;
 animation.playsInline = true;
