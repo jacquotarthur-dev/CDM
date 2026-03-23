@@ -482,11 +482,14 @@ animation.style.display = "block";
 
 animation.onended = () => {
 
+animation.pause();
+animation.currentTime = 0;
+animation.src = ""; // 🔥 très important (libère complètement la vidéo)
 animation.style.display = "none";
 
 showMedia(mediaToShow);
 
-document.getElementById("cooldown").style.display = "none";
+document.getElementById("cooldown").style.display = "block";
 
 startTimer(startTime);
 
