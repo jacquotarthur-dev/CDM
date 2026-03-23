@@ -96,6 +96,7 @@ font-family:sans-serif;
 font-size:14px;
 border-radius:20px;
 z-index:20;
+display:none;
 }
 
 </style>
@@ -490,6 +491,8 @@ animation.onended = () => {
 
 animation.style.display = "none";
 showMedia(mediaToShow);
+
+document.getElementById("cooldown").style.display = "block";
 
 animation.muted = true;
 animation.playsInline = true;
