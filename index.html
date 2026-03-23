@@ -38,7 +38,6 @@ justify-content:center;
 z-index:1;
 pointer-events:none;
 }
-}
 
 #container img,
 #container video {
@@ -504,12 +503,14 @@ animation.style.display = "block";
 
 animation.onended = () => {
 
-animation.style.display = "none";
 
 showMedia(mediaToShow);
-
+  
 // 👇 afficher le cooldown ici seulement
 document.getElementById("cooldown").style.display = "block";
+
+// ✅ AJOUT ICI
+startTimer(startTime);
 
 };
 
@@ -518,10 +519,7 @@ animation.playsInline = true;
 
 };
 
-// ===== START TIMER =====
-startTimer(startTime);
 
-});
 
 </script>
 
