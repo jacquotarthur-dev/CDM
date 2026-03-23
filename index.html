@@ -453,6 +453,9 @@ setInterval(update, 1000);
 
 startScreen.addEventListener("click", () => {
 
+animation.style.display = "none";
+animation.pause();
+
 startScreen.style.display = "none";
 
 let savedMedia = localStorage.getItem("media");
