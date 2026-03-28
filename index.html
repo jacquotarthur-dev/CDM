@@ -145,6 +145,47 @@ Prochain Malaise dans : <span id="timer">60</span>s
 
 <script>
 
+let dice;
+let diceFace;
+
+function createDice() {
+
+  dice = document.createElement("div");
+  dice.id = "dice";
+
+  diceFace = document.createElement("div");
+  diceFace.id = "diceFace";
+  diceFace.textContent = "🎲";
+
+  dice.appendChild(diceFace);
+  document.body.appendChild(dice);
+
+  const diceFaces = ["⚀","⚁","⚂","⚃","⚄","⚅"];
+
+  dice.addEventListener("click", () => {
+
+    let rolls = 10;
+
+    let interval = setInterval(() => {
+
+      let randomFace = Math.floor(Math.random() * 6);
+      diceFace.textContent = diceFaces[randomFace];
+
+      rolls--;
+
+      if (rolls <= 0) {
+        clearInterval(interval);
+
+        let final = Math.floor(Math.random() * 6);
+        diceFace.textContent = diceFaces[final];
+      }
+
+    }, 100);
+
+  });
+
+
+
 // ===== CONFIG =====
 const cooldown = 60000;
 
@@ -517,6 +558,7 @@ animation.src = animationFile;
 animation.style.display = "block";
 
 animation.onended = () => {
+createDice();
 
 dice.style.display = "flex";
 
@@ -564,11 +606,6 @@ dice.addEventListener("click", () => {
 });
 
 </script>
-
-<div id="dice">
-  <div id="diceFace">🎲</div>
-</div>
-
 
 </body>
 </html>
