@@ -99,6 +99,31 @@ z-index:20;
 display:none;
 }
 
+#dice {
+position:fixed;
+bottom:20px;
+right:20px;
+width:60px;
+height:60px;
+background:rgba(0,0,0,0.6);
+backdrop-filter:blur(6px);
+border-radius:15px;
+display:none;
+align-items:center;
+justify-content:center;
+z-index:50;
+cursor:pointer;
+}
+
+#diceFace {
+font-size:30px;
+transition:transform 0.2s;
+}
+
+#dice:active {
+transform:scale(0.9);
+}
+  
 </style>
 
 </head>
@@ -451,6 +476,8 @@ setInterval(update, 1000);
 
 startScreen.addEventListener("click", () => {
 
+dice.style.display = "none";
+
 let savedMedia = localStorage.getItem("media");
 let savedTime = localStorage.getItem("media_time");
 
@@ -489,6 +516,8 @@ animation.style.display = "block";
 
 animation.onended = () => {
 
+dice.style.display = "flex";
+
 animation.style.display = "none";
 showMedia(mediaToShow);
 
@@ -504,7 +533,38 @@ startTimer(startTime);
 
 });
 
+const dice = document.getElementById("dice");
+const diceFace = document.getElementById("diceFace");
+
+const diceFaces = ["⚀","⚁","⚂","⚃","⚄","⚅"];
+
+dice.addEventListener("click", () => {
+
+  let rolls = 10; // nombre de frames animation
+  let interval = setInterval(() => {
+
+    let randomFace = Math.floor(Math.random() * 6);
+    diceFace.textContent = diceFaces[randomFace];
+
+    rolls--;
+
+    if(rolls <= 0){
+      clearInterval(interval);
+
+      let final = Math.floor(Math.random() * 6);
+      diceFace.textContent = diceFaces[final];
+    }
+
+  }, 100);
+
+});
+
 </script>
+
+<div id="dice">
+  <div id="diceFace">🎲</div>
+</div>
+
 
 </body>
 </html>
