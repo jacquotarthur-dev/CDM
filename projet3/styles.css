@@ -7,7 +7,7 @@ html {
   font-family: system-ui, sans-serif;
 }
 body {
-  background: linear-gradient(#c70c0c, #cf2424, #970505);
+  background-color: #101010;
   display: grid;
   grid-template-columns: 1fr;
   height: 100vh;
@@ -187,10 +187,10 @@ body {
 button {
   align-self: center;
   background-color: #efefef;
-  border: none;
+  border-radius: 10%;
   color: #333;
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 500;
   justify-self: center;
   padding: 0.5rem 1rem;
 }
