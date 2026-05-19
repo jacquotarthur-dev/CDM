@@ -1,6 +1,6 @@
 {
-"name": "NFC Drop",
-"short_name": "Drop",
+"name": "CDM Home",
+"short_name": "CDM",
 "start_url": "index.html",
 "display": "standalone",
 "background_color": "#000000",
