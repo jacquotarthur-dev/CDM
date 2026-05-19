@@ -214,6 +214,27 @@
   </div>
 
   <script>
+
+    // CODE TEMPORAIRE
+  
+  const CODE = "121016"; // change ton code ici
+
+  const saisi = localStorage.getItem('cdm_access');
+  if (saisi !== CODE) {
+    const tentative = prompt("Code d'accès :");
+    if (tentative === CODE) {
+      localStorage.setItem('cdm_access', CODE);
+    } else {
+      document.body.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;min-height:100dvh;background:#000">
+          <p style="color:#333;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:monospace">Accès refusé</p>
+        </div>
+      `;
+    }
+  }
+
+
+    
     // Décalages en ms pour chaque icône active
     const delays = { p1: 0, p2: 3000, p3: 6000 };
     const interval = 10000; // toutes les 10s
