@@ -349,7 +349,7 @@
   <script>
     // =============================================
     // CATALOGUE — ajoute tes singles ici
-    // { title, artist, file } — les fichiers .jpg et .mp3
+    // { title, artist, file } — les fichiers .png et .mp3
     // doivent porter le même nom que "file" dans ton dossier projet2/
     // =============================================
     const TRACKS = [
@@ -373,7 +373,7 @@
       card.className = 'single-card';
       card.innerHTML = `
         <div class="cover-wrap">
-          <img class="cover-img" src="./${track.file}.jpg" alt="${track.title}" />
+          <img class="cover-img" src="./${track.file}.png" alt="${track.title}" />
           <div class="disc"></div>
         </div>
         <div class="single-info">
@@ -402,7 +402,7 @@
 
     function loadTrack(index) {
       const t = TRACKS[index];
-      document.getElementById('player-img').src = `./${t.file}.jpg`;
+      document.getElementById('player-img').src = `./${t.file}.png`;
       document.getElementById('player-title').textContent = t.title;
       document.getElementById('player-artist').textContent = t.artist;
       audio.src = `./${t.file}.mp3`;
