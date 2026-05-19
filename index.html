@@ -3,163 +3,235 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CDM — Hub</title>
+  <title>CDM</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500&display=swap');
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: #080808;
+      background: #141414;
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-family: 'DM Mono', monospace;
-      padding: 32px 24px;
-    }
-
-    .label {
-      color: #333;
-      font-size: 10px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      margin-bottom: 40px;
+      font-family: 'Barlow Condensed', sans-serif;
+      padding: 40px 24px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      width: 100%;
-      max-width: 380px;
+      grid-template-columns: repeat(2, 100px);
+      gap: 32px 40px;
+      justify-content: center;
     }
 
-    .card {
-      position: relative;
-      aspect-ratio: 1 / 1;
-      border-radius: 4px;
+    /* — Cellule commune — */
+    .cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
       text-decoration: none;
-      overflow: hidden;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 0.12s ease;
     }
 
-    .card:active { transform: scale(0.96); }
-
-    .card.active {
-      background: #111;
-      border: 1px solid #222;
+    /* — Wrapper icône (pour le liseret) — */
+    .icon-wrap {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border-radius: 22px;
+      overflow: visible; /* le canvas SVG sort légèrement */
     }
 
-    .card.active .icon {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    /* Icône image */
+    .icon-wrap img {
+      width: 100%;
+      height: 100%;
+      border-radius: 22px;
+      display: block;
+      object-fit: cover;
     }
 
-    .card.active .icon svg {
-      width: 48%;
-      height: 48%;
-      opacity: 0.9;
-    }
-
-    .card.active .name {
-      position: absolute;
-      bottom: 14px;
-      left: 0; right: 0;
+    /* Nom sous l'icône */
+    .cell .app-name {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
       text-align: center;
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: #666;
-      text-transform: uppercase;
+      max-width: 100px;
+      line-height: 1.1;
     }
 
-    .card.active::after {
-      content: '';
+    /* — Cases WIP — */
+    .cell.wip .icon-wrap {
+      background: #222;
+      border-radius: 22px;
+    }
+
+    .cell.wip .wip-label {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 50% 40%, rgba(255,255,255,0.04) 0%, transparent 70%);
-    }
-
-    .card.active .icon img {
-  width: 48%;
-  height: 48%;
-  object-fit: contain;
-}
-
-    .card.wip {
-      background: transparent;
-      border: 1.5px dashed #222;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: default;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 1px;
+      color: #3a3a3a;
+      text-transform: lowercase;
     }
 
-    .card.wip .wip-label {
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: #2a2a2a;
-      text-transform: uppercase;
+    .cell.wip .app-name { color: transparent; }
+
+    /* — Liseret SVG — */
+    .glow-ring {
+      position: absolute;
+      inset: -3px;
+      width: calc(100% + 6px);
+      height: calc(100% + 6px);
+      pointer-events: none;
+      border-radius: 25px;
+      overflow: visible;
     }
 
-    .p1 .icon svg { color: #C8A97E; }
-    .p2 .icon svg { color: #7EA8C8; }
-    .p3 .icon svg { color: #A8C87E; }
+    .ring-track {
+      fill: none;
+      stroke: rgba(255,255,255,0.08);
+      stroke-width: 2;
+    }
+
+    .ring-light {
+      fill: none;
+      stroke: rgba(255,255,255,0.85);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-dasharray: 30 300;
+      stroke-dashoffset: 0;
+      filter: drop-shadow(0 0 4px rgba(255,255,255,0.9));
+    }
+
+    /* Animation générique */
+    @keyframes sweep {
+      0%   { stroke-dashoffset: 0; opacity: 1; }
+      80%  { stroke-dashoffset: -330; opacity: 1; }
+      90%  { stroke-dashoffset: -330; opacity: 0; }
+      100% { stroke-dashoffset: -330; opacity: 0; }
+    }
+
+    .p1 .ring-light {
+      animation: sweep 1s cubic-bezier(0.4,0,0.2,1) infinite;
+      animation-play-state: paused;
+    }
+    .p2 .ring-light {
+      animation: sweep 1s cubic-bezier(0.4,0,0.2,1) infinite;
+      animation-play-state: paused;
+    }
+    .p3 .ring-light {
+      animation: sweep 1s cubic-bezier(0.4,0,0.2,1) infinite;
+      animation-play-state: paused;
+    }
+
+    .ring-light.running {
+      animation-play-state: running !important;
+    }
   </style>
 </head>
 <body>
 
-  <p class="label">CDM</p>
-
   <div class="grid">
 
-    <a class="card active p1" href="./projet1/">
-      <div class="icon">
-          <img src="./Icon Booster.png" alt="Projet 1" />
-      </div>
-      <span class="name">Booster CDM</span>
-    </a>
-
-    <a class="card active p2" href="./projet2/">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="5" width="18" height="14" rx="2"/>
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M8.5 5.5V5M15.5 5.5V5"/>
+    <!-- Projet 1 -->
+    <a class="cell p1" href="./projet1/">
+      <div class="icon-wrap">
+        <img src="./Icon Booster.png" alt="Projet 1" />
+        <svg class="glow-ring" viewBox="0 0 106 106" xmlns="http://www.w3.org/2000/svg">
+          <rect class="ring-track" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
+          <rect class="ring-light" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
         </svg>
       </div>
-      <span class="name">Projet 2</span>
+      <span class="app-name">Booster CDM</span>
     </a>
 
-    <a class="card active p3" href="./projet3/">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 18V5l12-2v13"/>
-          <circle cx="6" cy="18" r="3"/>
-          <circle cx="18" cy="16" r="3"/>
+    <!-- Projet 2 -->
+    <a class="cell p2" href="./projet2/">
+      <div class="icon-wrap">
+        <img src="./icone2.png" alt="Projet 2" />
+        <svg class="glow-ring" viewBox="0 0 106 106" xmlns="http://www.w3.org/2000/svg">
+          <rect class="ring-track" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
+          <rect class="ring-light" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
         </svg>
       </div>
-      <span class="name">Projet 3</span>
+      <span class="app-name">Projet 2</span>
     </a>
 
-    <a class="card wip" href="./projet4/">
-      <span class="wip-label">En cours</span>
+    <!-- Projet 3 -->
+    <a class="cell p3" href="./projet3/">
+      <div class="icon-wrap">
+        <img src="./icone3.png" alt="Projet 3" />
+        <svg class="glow-ring" viewBox="0 0 106 106" xmlns="http://www.w3.org/2000/svg">
+          <rect class="ring-track" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
+          <rect class="ring-light" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
+        </svg>
+      </div>
+      <span class="app-name">Projet 3</span>
     </a>
 
-    <a class="card wip" href="./projet5/">
-      <span class="wip-label">En cours</span>
-    </a>
+    <!-- WIP 4 -->
+    <div class="cell wip">
+      <div class="icon-wrap">
+        <span class="wip-label">à suivre</span>
+      </div>
+      <span class="app-name">—</span>
+    </div>
 
-    <a class="card wip" href="./projet6/">
-      <span class="wip-label">En cours</span>
-    </a>
+    <!-- WIP 5 -->
+    <div class="cell wip">
+      <div class="icon-wrap">
+        <span class="wip-label">à suivre</span>
+      </div>
+      <span class="app-name">—</span>
+    </div>
+
+    <!-- WIP 6 -->
+    <div class="cell wip">
+      <div class="icon-wrap">
+        <span class="wip-label">à suivre</span>
+      </div>
+      <span class="app-name">—</span>
+    </div>
 
   </div>
 
+  <script>
+    // Décalages en ms pour chaque icône active
+    const delays = { p1: 0, p2: 3000, p3: 6000 };
+    const interval = 10000; // toutes les 10s
+
+    function triggerRing(selector, delay) {
+      setTimeout(function fire() {
+        const ring = document.querySelector('.' + selector + ' .ring-light');
+        if (!ring) return;
+        ring.classList.remove('running');
+        void ring.offsetWidth; // reflow pour reset
+        ring.classList.add('running');
+
+        // Retire la classe après 1s (durée de l'anim) pour permettre le reset au prochain cycle
+        setTimeout(() => ring.classList.remove('running'), 1000);
+
+        setTimeout(fire, interval);
+      }, delay);
+    }
+
+    triggerRing('p1', delays.p1);
+    triggerRing('p2', delays.p2);
+    triggerRing('p3', delays.p3);
+  </script>
+
 </body>
+</html>
+
 </html>
