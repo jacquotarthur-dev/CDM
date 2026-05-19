@@ -85,6 +85,12 @@
       background: radial-gradient(circle at 50% 40%, rgba(255,255,255,0.04) 0%, transparent 70%);
     }
 
+    .card.active .icon img {
+  width: 48%;
+  height: 48%;
+  object-fit: contain;
+}
+
     .card.wip {
       background: transparent;
       border: 1.5px dashed #222;
@@ -114,10 +120,7 @@
 
     <a class="card active p1" href="./projet1/">
       <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14"/>
-          <rect x="3" y="8" width="12" height="8" rx="2"/>
-        </svg>
+          <img src="./Icon Booster.png" alt="Projet 1" />
       </div>
       <span class="name">Booster CDM</span>
     </a>
