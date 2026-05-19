@@ -1,1 +1,486 @@
-<h1>Projet 2</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Musique</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400&display=swap');
+
+    :root {
+      --black: #000;
+      --white: #fff;
+      --grey: #888;
+      --grey-dark: #1a1a1a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ===================== VITRINE ===================== */
+    #vitrine {
+      padding: 48px 12px 80px;
+    }
+
+    .vitrine-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #333;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px 8px;
+    }
+
+    .single-card {
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Pochette + disque */
+    .cover-wrap {
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%; /* carré */
+      overflow: visible;
+    }
+
+    .cover-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 2px;
+      display: block;
+      z-index: 2;
+    }
+
+    /* Disque qui dépasse à droite */
+    .disc {
+      position: absolute;
+      top: 50%;
+      right: -22%;
+      transform: translateY(-50%);
+      width: 54%;
+      height: 54%;
+      border-radius: 50%;
+      background: conic-gradient(
+        #1a1a1a 0deg,
+        #2a2a2a 30deg,
+        #111 60deg,
+        #222 90deg,
+        #1a1a1a 120deg,
+        #2a2a2a 150deg,
+        #111 180deg,
+        #222 210deg,
+        #1a1a1a 240deg,
+        #2a2a2a 270deg,
+        #111 300deg,
+        #222 330deg,
+        #1a1a1a 360deg
+      );
+      box-shadow: 0 0 0 1px #333, inset 0 0 0 28% #000;
+      z-index: 1;
+    }
+
+    .disc::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 18%;
+      height: 18%;
+      border-radius: 50%;
+      background: #222;
+      box-shadow: 0 0 0 1px #444;
+    }
+
+    /* Clip pour cacher la moitié gauche du disque */
+    .disc-clip {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 3;
+      pointer-events: none;
+      /* un dégradé qui couvre la partie du disque qui chevauche la pochette */
+    }
+
+    .single-info {
+      text-align: center;
+    }
+
+    .single-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 3px;
+    }
+
+    .single-artist {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 300;
+      color: var(--grey);
+      letter-spacing: 0.5px;
+    }
+
+    /* ===================== PLAYER ===================== */
+    #player {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100dvh;
+      background: var(--black);
+      padding: 0 0 48px;
+    }
+
+    #player.active { display: flex; }
+    #vitrine.hidden { display: none; }
+
+    /* Bouton retour */
+    .back-btn {
+      align-self: flex-start;
+      padding: 20px 20px 8px;
+      background: none;
+      border: none;
+      color: var(--grey);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .back-btn svg { width: 14px; height: 14px; }
+
+    /* Pochette player (pleine largeur, sans disque) */
+    .player-cover-wrap {
+      width: 72vw;
+      max-width: 300px;
+      aspect-ratio: 1;
+      margin: 24px auto 28px;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+
+    .player-cover-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .player-info {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 0 24px;
+    }
+
+    .player-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+
+    .player-artist {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--grey);
+    }
+
+    /* Barre de progression */
+    .progress-wrap {
+      width: 100%;
+      padding: 0 28px;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 2px;
+      background: #222;
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .progress-bar::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--white);
+      cursor: pointer;
+      margin-top: -5px;
+    }
+
+    .progress-bar::-webkit-slider-runnable-track {
+      height: 2px;
+      background: linear-gradient(to right, #fff var(--progress, 0%), #222 var(--progress, 0%));
+      border-radius: 2px;
+    }
+
+    .time-labels {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 28px 0;
+      font-size: 10px;
+      color: #444;
+      letter-spacing: 1px;
+    }
+
+    /* Contrôles */
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 32px;
+    }
+
+    .ctrl-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--grey);
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s;
+    }
+
+    .ctrl-btn:active { color: var(--white); }
+
+    .ctrl-btn.play {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .ctrl-btn.play:active { background: #ddd; }
+
+    .ctrl-btn svg { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- ========== VITRINE ========== -->
+  <div id="vitrine">
+    <p class="vitrine-title">Sélection</p>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <!-- ========== PLAYER ========== -->
+  <div id="player">
+    <button class="back-btn" onclick="closePlayer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+      Retour
+    </button>
+
+    <div class="player-cover-wrap">
+      <img id="player-img" src="" alt="" />
+    </div>
+
+    <div class="player-info">
+      <div class="player-title" id="player-title"></div>
+      <div class="player-artist" id="player-artist"></div>
+    </div>
+
+    <div class="progress-wrap">
+      <input type="range" class="progress-bar" id="progress" value="0" min="0" max="100" step="0.1" oninput="seek(this.value)" />
+    </div>
+    <div class="time-labels">
+      <span id="time-current">0:00</span>
+      <span id="time-total">0:00</span>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" onclick="prevTrack()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>
+        </svg>
+      </button>
+      <button class="ctrl-btn play" id="play-btn" onclick="togglePlay()">
+        <svg id="play-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+      </button>
+      <button class="ctrl-btn" onclick="nextTrack()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 18l8.5-6L6 6v12zm2.5-6 8.5 6V6z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <audio id="audio"></audio>
+
+  <script>
+    // =============================================
+    // CATALOGUE — ajoute tes singles ici
+    // { title, artist, file } — les fichiers .jpg et .mp3
+    // doivent porter le même nom que "file" dans ton dossier projet2/
+    // =============================================
+    const TRACKS = [
+      { title: "Lauralol",         artist: "Alexis",            file: "Lauralol" },
+      { title: "Le Big Makélélé",  artist: "Arthur et Alexis",  file: "Le Big Makélélé" },
+      { title: "Cowboys",          artist: "Arthur et Alexis",  file: "Cowboys" },
+      { title: "Alice ça glisse",  artist: "Noé",               file: "Alice ça glisse" },
+      // Ajoute tes prochains singles comme ça :
+      // { title: "Titre",  artist: "Artiste",  file: "Titre" },
+    ];
+
+    // =============================================
+    let currentIndex = 0;
+    const audio = document.getElementById('audio');
+    const progressBar = document.getElementById('progress');
+
+    // — Build vitrine —
+    const grid = document.getElementById('grid');
+    TRACKS.forEach((track, i) => {
+      const card = document.createElement('div');
+      card.className = 'single-card';
+      card.innerHTML = `
+        <div class="cover-wrap">
+          <img class="cover-img" src="./${track.file}.jpg" alt="${track.title}" />
+          <div class="disc"></div>
+        </div>
+        <div class="single-info">
+          <div class="single-title">${track.title}</div>
+          <div class="single-artist">${track.artist}</div>
+        </div>
+      `;
+      card.addEventListener('click', () => openPlayer(i));
+      grid.appendChild(card);
+    });
+
+    // — Player —
+    function openPlayer(index) {
+      currentIndex = index;
+      loadTrack(index);
+      document.getElementById('vitrine').classList.add('hidden');
+      document.getElementById('player').classList.add('active');
+    }
+
+    function closePlayer() {
+      audio.pause();
+      document.getElementById('vitrine').classList.remove('hidden');
+      document.getElementById('player').classList.remove('active');
+      updatePlayIcon(false);
+    }
+
+    function loadTrack(index) {
+      const t = TRACKS[index];
+      document.getElementById('player-img').src = `./${t.file}.jpg`;
+      document.getElementById('player-title').textContent = t.title;
+      document.getElementById('player-artist').textContent = t.artist;
+      audio.src = `./${t.file}.mp3`;
+      audio.load();
+      progressBar.value = 0;
+      updateProgress(0);
+      document.getElementById('time-current').textContent = '0:00';
+      document.getElementById('time-total').textContent = '0:00';
+      updatePlayIcon(false);
+    }
+
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play();
+        updatePlayIcon(true);
+      } else {
+        audio.pause();
+        updatePlayIcon(false);
+      }
+    }
+
+    function updatePlayIcon(playing) {
+      document.getElementById('play-icon').innerHTML = playing
+        ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'  // pause
+        : '<path d="M8 5v14l11-7z"/>'; // play
+    }
+
+    function nextTrack() {
+      currentIndex = (currentIndex + 1) % TRACKS.length;
+      loadTrack(currentIndex);
+      audio.play();
+      updatePlayIcon(true);
+    }
+
+    function prevTrack() {
+      if (audio.currentTime > 3) {
+        audio.currentTime = 0;
+      } else {
+        currentIndex = (currentIndex - 1 + TRACKS.length) % TRACKS.length;
+        loadTrack(currentIndex);
+        audio.play();
+        updatePlayIcon(true);
+      }
+    }
+
+    function seek(val) {
+      if (audio.duration) {
+        audio.currentTime = (val / 100) * audio.duration;
+      }
+    }
+
+    function updateProgress(pct) {
+      progressBar.style.setProperty('--progress', pct + '%');
+    }
+
+    function formatTime(s) {
+      if (isNaN(s)) return '0:00';
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60).toString().padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration) return;
+      const pct = (audio.currentTime / audio.duration) * 100;
+      progressBar.value = pct;
+      updateProgress(pct);
+      document.getElementById('time-current').textContent = formatTime(audio.currentTime);
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      document.getElementById('time-total').textContent = formatTime(audio.duration);
+    });
+
+    audio.addEventListener('ended', () => {
+      nextTrack();
+    });
+  </script>
+
+</body>
+</html>
