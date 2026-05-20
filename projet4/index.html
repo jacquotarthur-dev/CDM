@@ -78,8 +78,8 @@
 
     /* ── Scène 3D ── */
     .scene {
-      width: 72vw;
-      max-width: 320px;
+      width: 88vw;
+      max-width: 420px;
       aspect-ratio: 3 / 4;
       perspective: 1200px;
       cursor: pointer;
@@ -115,6 +115,7 @@
       object-fit: cover;
       display: block;
       pointer-events: none;
+    <button class="flip-btn" id="flip-btn">Voir la recette</button>
     }
 
     /* Subtle vignette sur le recto */
@@ -142,32 +143,25 @@
       border-radius: 16px;
     }
 
-    /* Ombre portée de la carte */
-    .scene::after {
-      content: '';
-      display: block;
-      width: 60%;
-      height: 20px;
-      margin: 16px auto 0;
-      background: radial-gradient(ellipse, rgba(201,169,110,0.12) 0%, transparent 70%);
-      filter: blur(4px);
-    }
-
-    /* Hint tap */
-    .hint {
-      position: fixed;
-      bottom: 64px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: 'Courier Prime', monospace;
-      font-size: 9px;
-      letter-spacing: 3px;
-      color: #2a2a2a;
-      text-transform: uppercase;
-      white-space: nowrap;
-      z-index: 100;
-      transition: opacity 0.5s;
-    }
+  .flip-btn {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(245,240,232,0.7);
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
 
     /* Animation d'entrée */
     @keyframes cardIn {
@@ -271,13 +265,11 @@
       updateDots();
     }
 
-    // ── Flip au tap ──
-    function flipCard() {
-      isFlipped = !isFlipped;
-      card.classList.toggle('flipped', isFlipped);
-      // Cache le hint après le premier flip
-      hint.style.opacity = '0';
-    }
+function flipCard() {
+  isFlipped = !isFlipped;
+  card.classList.toggle('flipped', isFlipped);
+  document.getElementById('flip-btn').textContent = isFlipped ? 'Voir le visuel' : 'Voir la recette';
+}
 
     // ── Navigation ──
     function goTo(index) {
@@ -356,8 +348,13 @@
     });
 
     // ── Init ──
+    
     buildDots();
     loadCard(current);
+    document.getElementById('flip-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  flipCard();
+});
   </script>
 
 </body>
