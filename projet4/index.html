@@ -1,1 +1,365 @@
-<h1>Projet 4</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="color-scheme" content="dark" />
+  <title>Onboakoa</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="Icon App.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Courier+Prime&display=swap');
+
+    :root {
+      --black: #080808;
+      --white: #f5f0e8;
+      --gold: #c9a96e;
+      --grey: #2a2a2a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: var(--black);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    /* ── Indicateur de progression ── */
+    .dots {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      z-index: 100;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #333;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .dot.active {
+      background: var(--gold);
+      transform: scale(1.4);
+    }
+
+    /* ── Bouton retour ── */
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 200;
+      background: none;
+      border: none;
+      color: rgba(245,240,232,0.4);
+      cursor: pointer;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    /* ── Scène 3D ── */
+    .scene {
+      width: 72vw;
+      max-width: 320px;
+      aspect-ratio: 3 / 4;
+      perspective: 1200px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 16px;
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      overflow: hidden;
+    }
+
+    /* Recto — visuel */
+    .card-front img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Subtle vignette sur le recto */
+    .card-front::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.35) 100%);
+      border-radius: 16px;
+    }
+
+    /* Verso — recette */
+    .card-back {
+      transform: rotateY(180deg);
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-back img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 16px;
+    }
+
+    /* Ombre portée de la carte */
+    .scene::after {
+      content: '';
+      display: block;
+      width: 60%;
+      height: 20px;
+      margin: 16px auto 0;
+      background: radial-gradient(ellipse, rgba(201,169,110,0.12) 0%, transparent 70%);
+      filter: blur(4px);
+    }
+
+    /* Hint tap */
+    .hint {
+      position: fixed;
+      bottom: 64px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Courier Prime', monospace;
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: #2a2a2a;
+      text-transform: uppercase;
+      white-space: nowrap;
+      z-index: 100;
+      transition: opacity 0.5s;
+    }
+
+    /* Animation d'entrée */
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .scene {
+      animation: cardIn 0.5s cubic-bezier(0.2, 0, 0, 1) both;
+    }
+
+    /* Swipe feedback */
+    .scene.swiping {
+      transition: transform 0.08s linear;
+    }
+  </style>
+</head>
+<body>
+
+  <a class="back-btn" href="../">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <path d="M19 12H5M12 5l-7 7 7 7"/>
+    </svg>
+    Retour
+  </a>
+
+  <div class="scene" id="scene">
+    <div class="card" id="card">
+      <div class="card-face card-front">
+        <img id="img-front" src="" alt="" />
+      </div>
+      <div class="card-face card-back">
+        <img id="img-back" src="" alt="" />
+      </div>
+    </div>
+  </div>
+
+  <p class="hint" id="hint">appuyer pour retourner · glisser pour naviguer</p>
+
+  <div class="dots" id="dots"></div>
+
+  <script>
+    // ─────────────────────────────────────────
+    // CATALOGUE — ajoute ou retire des cartes ici
+    // Les fichiers doivent être dans le même dossier :
+    // visuel : "1.jpg", recette : "1_R.jpg" etc.
+    // ─────────────────────────────────────────
+    const CARDS = [
+      { id: "1" },
+      { id: "2" },
+      { id: "3" },
+      { id: "4" },
+      { id: "5" },
+      { id: "6" },
+      // Ajoute une ligne { id: "7" } pour un 7e cocktail, etc.
+    ];
+
+    // ── État ──
+    const total = CARDS.length;
+    let current = Math.floor(Math.random() * total); // position aléatoire au départ
+    let isFlipped = false;
+
+    const scene = document.getElementById('scene');
+    const card  = document.getElementById('card');
+    const front = document.getElementById('img-front');
+    const back  = document.getElementById('img-back');
+    const hint  = document.getElementById('hint');
+    const dotsEl = document.getElementById('dots');
+
+    // ── Dots ──
+    function buildDots() {
+      dotsEl.innerHTML = '';
+      CARDS.forEach((_, i) => {
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === current ? ' active' : '');
+        dotsEl.appendChild(d);
+      });
+    }
+
+    function updateDots() {
+      [...dotsEl.children].forEach((d, i) => {
+        d.classList.toggle('active', i === current);
+      });
+    }
+
+    // ── Chargement d'une carte ──
+    function loadCard(index, direction = 0) {
+      const c = CARDS[index];
+      // Légère animation de transition
+      scene.style.animation = 'none';
+      void scene.offsetWidth;
+      scene.style.animation = 'cardIn 0.4s cubic-bezier(0.2,0,0,1) both';
+
+      front.src = `./${c.id}.jpg`;
+      back.src  = `./${c.id}_R.jpg`;
+
+      // Reset flip
+      isFlipped = false;
+      card.classList.remove('flipped');
+
+      updateDots();
+    }
+
+    // ── Flip au tap ──
+    function flipCard() {
+      isFlipped = !isFlipped;
+      card.classList.toggle('flipped', isFlipped);
+      // Cache le hint après le premier flip
+      hint.style.opacity = '0';
+    }
+
+    // ── Navigation ──
+    function goTo(index) {
+      current = ((index % total) + total) % total;
+      loadCard(current);
+    }
+
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
+
+    // ── Touch / Swipe ──
+    let startX = 0, startY = 0, deltaX = 0;
+    let isSwiping = false;
+    const SWIPE_THRESHOLD = 60;
+
+    scene.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      deltaX = 0;
+      isSwiping = false;
+    }, { passive: true });
+
+    scene.addEventListener('touchmove', e => {
+      deltaX = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+
+      // Swipe horizontal détecté
+      if (Math.abs(deltaX) > Math.abs(dy) && Math.abs(deltaX) > 8) {
+        isSwiping = true;
+        e.preventDefault();
+        scene.classList.add('swiping');
+        scene.style.transform = `translateX(${deltaX * 0.3}px) rotate(${deltaX * 0.02}deg)`;
+      }
+    }, { passive: false });
+
+    scene.addEventListener('touchend', e => {
+      scene.classList.remove('swiping');
+      scene.style.transform = '';
+
+      if (isSwiping) {
+        if (deltaX < -SWIPE_THRESHOLD) next();
+        else if (deltaX > SWIPE_THRESHOLD) prev();
+      } else {
+        // Tap simple → flip
+        flipCard();
+      }
+    }, { passive: true });
+
+    // ── Souris (desktop) ──
+    let mouseStartX = 0, mouseDelta = 0, mouseDown = false;
+
+    scene.addEventListener('mousedown', e => {
+      mouseStartX = e.clientX;
+      mouseDelta = 0;
+      mouseDown = true;
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (!mouseDown) return;
+      mouseDelta = e.clientX - mouseStartX;
+      scene.classList.add('swiping');
+      scene.style.transform = `translateX(${mouseDelta * 0.3}px) rotate(${mouseDelta * 0.02}deg)`;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!mouseDown) return;
+      mouseDown = false;
+      scene.classList.remove('swiping');
+      scene.style.transform = '';
+
+      if (Math.abs(mouseDelta) > SWIPE_THRESHOLD) {
+        mouseDelta < 0 ? next() : prev();
+      } else if (Math.abs(mouseDelta) < 5) {
+        flipCard();
+      }
+    });
+
+    // ── Init ──
+    buildDots();
+    loadCard(current);
+  </script>
+
+</body>
+</html>
+
