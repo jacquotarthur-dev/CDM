@@ -155,27 +155,32 @@
 
 
 
-  <script>
+<script>
+  const CODE = "121016"; // ton code ici
 
-    // CODE TEMPORAIRE
-  
-  const CODE = "121016"; // change ton code ici
+  function checkAccess() {
+    const saisi = localStorage.getItem('cdm_access');
+    if (saisi === CODE) return;
 
-  const saisi = localStorage.getItem('cdm_access');
-  if (saisi !== CODE) {
+    document.body.style.display = 'none';
+
     const tentative = prompt("Code d'accès :");
+
     if (tentative === CODE) {
       localStorage.setItem('cdm_access', CODE);
+      document.body.style.display = '';
     } else {
       document.body.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:center;min-height:100dvh;background:#000">
           <p style="color:#333;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:monospace">Accès refusé</p>
         </div>
       `;
+      document.body.style.display = '';
     }
   }
 
-    </script>
+  checkAccess();
+</script>
 
 
 
