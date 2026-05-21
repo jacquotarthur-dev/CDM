@@ -1,6 +1,39 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+
+
+  
+
+<script>
+  const CODE = "121016";
+
+  if (localStorage.getItem('cdm_access') !== CODE) {
+    document.body.innerHTML = `
+      <div id="lock" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;background:#000;gap:20px">
+        <p style="color:#333;font-size:10px;letter-spacing:4px;text-transform:uppercase;font-family:monospace">Code d'accès</p>
+        <input id="code-input" type="password" maxlength="20"
+          style="background:none;border:none;border-bottom:1px solid #222;color:#fff;font-family:monospace;font-size:18px;text-align:center;outline:none;width:120px;padding:8px 0;letter-spacing:8px"
+          placeholder="····" />
+        <p id="err" style="color:#ff4444;font-size:10px;letter-spacing:2px;font-family:monospace;opacity:0">Code incorrect</p>
+      </div>
+    `;
+
+    document.getElementById('code-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (document.getElementById('code-input').value === CODE) {
+          localStorage.setItem('cdm_access', CODE);
+          location.reload();
+        } else {
+          document.getElementById('err').style.opacity = '1';
+          document.getElementById('code-input').value = '';
+        }
+      }
+    });
+  }
+</script>
+
+  
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
@@ -151,38 +184,6 @@
       animation-play-state: running !important;
     }
   </style>
-
-
-
-
-<script>
-  const CODE = "121016"; // ton code ici
-
-  function checkAccess() {
-    const saisi = localStorage.getItem('cdm_access');
-    if (saisi === CODE) return;
-
-    document.body.style.display = 'none';
-
-    const tentative = prompt("Code d'accès :");
-
-    if (tentative === CODE) {
-      localStorage.setItem('cdm_access', CODE);
-      document.body.style.display = '';
-    } else {
-      document.body.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;min-height:100dvh;background:#000">
-          <p style="color:#333;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-family:monospace">Accès refusé</p>
-        </div>
-      `;
-      document.body.style.display = '';
-    }
-  }
-
-  checkAccess();
-</script>
-
-
 
 
 
