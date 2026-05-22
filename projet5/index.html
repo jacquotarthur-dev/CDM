@@ -1,1 +1,649 @@
-<h1>Projet 5</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="color-scheme" content="dark" />
+  <title>Espace commun</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
+
+    :root {
+      --bg:       #0d0d0d;
+      --surface:  #161616;
+      --border:   #222;
+      --text:     #e8e8e8;
+      --muted:    #555;
+
+      /* Rubriques — teintes neutres */
+      --football: #4a6741;
+      --tennis:   #4a5a6e;
+      --basket:   #6e4a4a;
+      --f1:       #6e634a;
+      --golf:     #4a6466;
+
+      /* Utilisateurs — couleurs vibrantes */
+      --u1: #e05c5c;
+      --u2: #e08c3a;
+      --u3: #d4c137;
+      --u4: #5cb85c;
+      --u5: #3ab8b8;
+      --u6: #5c8de0;
+      --u7: #a05ce0;
+      --u8: #e05ca8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ═══════════════════════════════
+       ÉCRAN DE CONNEXION
+    ═══════════════════════════════ */
+    #screen-login {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 32px;
+      gap: 32px;
+    }
+
+    .login-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--text);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .login-sub {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: -20px;
+    }
+
+    .login-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 20px;
+      text-align: center;
+      letter-spacing: 8px;
+      padding: 16px 24px;
+      width: 100%;
+      max-width: 240px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .login-input:focus { border-color: #444; }
+
+    .login-btn {
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      padding: 14px 40px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .login-btn:active { opacity: 0.8; }
+
+    .login-err {
+      font-size: 11px;
+      color: var(--u1);
+      letter-spacing: 1px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      margin-top: -20px;
+    }
+
+    /* ═══════════════════════════════
+       ÉCRAN RUBRIQUES
+    ═══════════════════════════════ */
+    #screen-rubriques {
+      display: none;
+      flex-direction: column;
+      min-height: 100dvh;
+      padding: 48px 20px 80px;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 40px;
+    }
+
+    .app-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--text);
+    }
+
+    .user-badge {
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+      color: #000;
+    }
+
+    .rubriques-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .rubrique-card {
+      border-radius: 16px;
+      padding: 24px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.12s, opacity 0.12s;
+      border: 1px solid transparent;
+    }
+
+    .rubrique-card:active { transform: scale(0.98); opacity: 0.85; }
+
+    .rubrique-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .rubrique-count {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 1px;
+    }
+
+    .rubrique-card.football { background: rgba(74,103,65,0.25); border-color: rgba(74,103,65,0.4); }
+    .rubrique-card.tennis   { background: rgba(74,90,110,0.25); border-color: rgba(74,90,110,0.4); }
+    .rubrique-card.basket   { background: rgba(110,74,74,0.25); border-color: rgba(110,74,74,0.4); }
+    .rubrique-card.f1       { background: rgba(110,99,74,0.25); border-color: rgba(110,99,74,0.4); }
+    .rubrique-card.golf     { background: rgba(74,100,102,0.25); border-color: rgba(74,100,102,0.4); }
+
+    .back-btn {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.2);
+      cursor: pointer;
+      padding: 8px;
+      z-index: 50;
+      text-decoration: none;
+      display: flex;
+    }
+
+    /* ═══════════════════════════════
+       ÉCRAN MUR
+    ═══════════════════════════════ */
+    #screen-mur {
+      display: none;
+      flex-direction: column;
+      min-height: 100dvh;
+    }
+
+    .mur-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mur-back {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+    }
+
+    .mur-rubrique-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      flex: 1;
+    }
+
+    .messages-list {
+      flex: 1;
+      padding: 20px 16px 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .message-bubble {
+      border-radius: 14px;
+      padding: 14px 16px;
+      position: relative;
+      max-width: 100%;
+    }
+
+    .message-text {
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(0,0,0,0.85);
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .message-link {
+      font-size: 12px;
+      color: rgba(0,0,0,0.6);
+      word-break: break-all;
+      margin-top: 6px;
+      display: block;
+      text-decoration: underline;
+    }
+
+    .message-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .message-author {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(0,0,0,0.5);
+      letter-spacing: 0.5px;
+    }
+
+    .message-time {
+      font-size: 10px;
+      color: rgba(0,0,0,0.35);
+    }
+
+    .message-delete {
+      background: none;
+      border: none;
+      color: rgba(0,0,0,0.3);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 0 0 0 8px;
+      line-height: 1;
+      display: none;
+    }
+
+    .message-delete.visible { display: block; }
+
+    /* Zone de saisie fixe en bas */
+    .compose-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 40;
+    }
+
+    .compose-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .compose-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 10px 14px;
+      outline: none;
+      resize: none;
+      min-height: 42px;
+      max-height: 120px;
+      line-height: 1.4;
+    }
+
+    .compose-link {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      padding: 8px 14px;
+      outline: none;
+      width: 100%;
+      letter-spacing: 0.3px;
+    }
+
+    .compose-link::placeholder { color: #333; }
+    .compose-input::placeholder { color: #333; }
+
+    .send-btn {
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 10px;
+      width: 42px;
+      height: 42px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+
+    .send-btn:active { opacity: 0.7; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+
+    /* Utilitaire */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- ══ CONNEXION ══ -->
+  <div id="screen-login">
+    <div>
+      <p class="login-title">Espace<br><em>commun</em></p>
+    </div>
+    <p class="login-sub">Code personnel</p>
+    <input class="login-input" id="login-input" type="password" maxlength="10" placeholder="····" />
+    <p class="login-err" id="login-err">Code incorrect</p>
+    <button class="login-btn" onclick="tryLogin()">Entrer</button>
+  </div>
+
+  <!-- ══ RUBRIQUES ══ -->
+  <div id="screen-rubriques">
+    <div class="top-bar">
+      <span class="app-title">Boîte commune</span>
+      <span class="user-badge" id="user-badge"></span>
+    </div>
+    <div class="rubriques-grid" id="rubriques-grid"></div>
+    <a class="back-btn" href="../">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- ══ MUR ══ -->
+  <div id="screen-mur">
+    <div class="mur-header">
+      <button class="mur-back" onclick="showRubriques()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span class="mur-rubrique-name" id="mur-rubrique-name"></span>
+    </div>
+
+    <div class="messages-list" id="messages-list">
+      <p class="empty-state" id="empty-state">Aucun message pour l'instant</p>
+    </div>
+
+    <div class="compose-bar">
+      <input class="compose-link" id="compose-link" type="url" placeholder="Lien optionnel (https://...)" />
+      <div class="compose-row">
+        <textarea class="compose-input" id="compose-input" placeholder="Ton message…" rows="1"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        <button class="send-btn" onclick="sendMessage()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, serverTimestamp, getCountFromServer }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ── Config Firebase ──
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgP0hd88OZc_WWGsS0kAUBOumAXeos07I",
+      authDomain: "blog-cdm.firebaseapp.com",
+      projectId: "blog-cdm",
+      storageBucket: "blog-cdm.firebasestorage.app",
+      messagingSenderId: "727621219684",
+      appId: "1:727621219684:web:a4717bf808b7ea8fb8b671"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // ─────────────────────────────────────────
+    // UTILISATEURS — modifie noms et codes ici
+    // ─────────────────────────────────────────
+    const USERS = {
+      "1111": { name: "Utilisateur 1", color: "#e05c5c" },
+      "2222": { name: "Utilisateur 2", color: "#e08c3a" },
+      "3333": { name: "Utilisateur 3", color: "#d4c137" },
+      "4444": { name: "Utilisateur 4", color: "#5cb85c" },
+      "5555": { name: "Utilisateur 5", color: "#3ab8b8" },
+      "6666": { name: "Utilisateur 6", color: "#5c8de0" },
+      "7777": { name: "Utilisateur 7", color: "#a05ce0" },
+      "8888": { name: "Utilisateur 8", color: "#e05ca8" },
+    };
+
+    // Code admin — peut supprimer tous les messages
+    const ADMIN_CODE = "0000";
+
+    // ─────────────────────────────────────────
+    // RUBRIQUES — ajoute des rubriques ici
+    // ─────────────────────────────────────────
+    const RUBRIQUES = [
+      { id: "football", name: "Football", cls: "football" },
+      { id: "tennis",   name: "Tennis",   cls: "tennis"   },
+      { id: "basket",   name: "Basket",   cls: "basket"   },
+      { id: "f1",       name: "F1",       cls: "f1"       },
+      { id: "golf",     name: "Golf",     cls: "golf"     },
+    ];
+
+    // ── État ──
+    let currentUser = null;
+    let currentRubrique = null;
+    let unsubscribe = null;
+
+    // ── Login ──
+    window.tryLogin = function() {
+      const code = document.getElementById('login-input').value.trim();
+      const err  = document.getElementById('login-err');
+
+      if (USERS[code]) {
+        currentUser = { code, ...USERS[code] };
+        sessionStorage.setItem('cdm5_user', code);
+        err.style.opacity = '0';
+        showRubriques();
+      } else {
+        err.style.opacity = '1';
+        document.getElementById('login-input').value = '';
+      }
+    };
+
+    document.getElementById('login-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') window.tryLogin();
+    });
+
+    // ── Rubriques ──
+    async function showRubriques() {
+      // Masquer les autres écrans
+      document.getElementById('screen-login').style.display     = 'none';
+      document.getElementById('screen-mur').style.display       = 'none';
+      document.getElementById('screen-rubriques').style.display = 'flex';
+
+      if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+
+      // Badge utilisateur
+      const badge = document.getElementById('user-badge');
+      badge.textContent = currentUser.name;
+      badge.style.background = currentUser.color;
+
+      // Build grille rubriques avec comptage
+      const grid = document.getElementById('rubriques-grid');
+      grid.innerHTML = '';
+
+      for (const r of RUBRIQUES) {
+        const snap = await getCountFromServer(collection(db, `rubriques/${r.id}/messages`));
+        const count = snap.data().count;
+
+        const card = document.createElement('div');
+        card.className = `rubrique-card ${r.cls}`;
+        card.innerHTML = `
+          <span class="rubrique-name">${r.name}</span>
+          <span class="rubrique-count">${count} msg</span>
+        `;
+        card.addEventListener('click', () => openMur(r));
+        grid.appendChild(card);
+      }
+    }
+
+    window.showRubriques = showRubriques;
+
+    // ── Mur ──
+    function openMur(rubrique) {
+      currentRubrique = rubrique;
+      document.getElementById('screen-rubriques').style.display = 'none';
+      document.getElementById('screen-mur').style.display       = 'flex';
+      document.getElementById('mur-rubrique-name').textContent  = rubrique.name;
+      document.getElementById('compose-input').value = '';
+      document.getElementById('compose-link').value  = '';
+      loadMessages(rubrique.id);
+    }
+
+    function loadMessages(rubriqueId) {
+      if (unsubscribe) unsubscribe();
+      const q = query(
+        collection(db, `rubriques/${rubriqueId}/messages`),
+        orderBy('createdAt', 'asc')
+      );
+
+      unsubscribe = onSnapshot(q, snap => {
+        const list  = document.getElementById('messages-list');
+        const empty = document.getElementById('empty-state');
+
+        // Vide la liste (sauf empty-state)
+        [...list.children].forEach(c => { if (c !== empty) c.remove(); });
+
+        if (snap.empty) {
+          empty.style.display = 'block';
+          return;
+        }
+        empty.style.display = 'none';
+
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          const canDelete = d.authorCode === currentUser.code || currentUser.code === ADMIN_CODE;
+
+          const bubble = document.createElement('div');
+          bubble.className = 'message-bubble';
+          bubble.style.background = d.authorColor + '22'; // fond très subtil
+          bubble.style.borderLeft = `3px solid ${d.authorColor}`;
+
+          const date = d.createdAt?.toDate();
+          const timeStr = date ? date.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+
+          bubble.innerHTML = `
+            <p class="message-text">${escapeHtml(d.text)}</p>
+            ${d.link ? `<a class="message-link" href="${escapeHtml(d.link)}" target="_blank" rel="noopener">${escapeHtml(d.link)}</a>` : ''}
+            <div class="message-meta">
+              <span class="message-author" style="color:${d.authorColor}">${escapeHtml(d.authorName)}</span>
+              <span style="display:flex;align-items:center;gap:6px">
+                <span class="message-time">${timeStr}</span>
+                <button class="message-delete ${canDelete ? 'visible' : ''}" data-id="${docSnap.id}" title="Supprimer">×</button>
+              </span>
+            </div>
+          `;
+
+          bubble.querySelector('.message-delete')?.addEventListener('click', () => {
+            deleteDoc(doc(db, `rubriques/${rubriqueId}/messages`, docSnap.id));
+          });
+
+          list.appendChild(bubble);
+        });
+
+        // Scroll en bas
+        list.scrollTop = list.scrollHeight;
+      });
+    }
+
+    // ── Envoyer ──
+    window.sendMessage = async function() {
+      const text = document.getElementById('compose-input').value.trim();
+      const link = document.getElementById('compose-link').value.trim();
+      if (!text) return;
+
+      await addDoc(collection(db, `rubriques/${currentRubrique.id}/messages`), {
+        text,
+        link: link || null,
+        authorName:  currentUser.name,
+        authorColor: currentUser.color,
+        authorCode:  currentUser.code,
+        createdAt:   serverTimestamp(),
+      });
+
+      document.getElementById('compose-input').value = '';
+      document.getElementById('compose-link').value  = '';
+      document.getElementById('compose-input').style.height = 'auto';
+    };
+
+    // ── Helpers ──
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Reprise de session ──
+    const savedCode = sessionStorage.getItem('cdm5_user');
+    if (savedCode && USERS[savedCode]) {
+      currentUser = { code: savedCode, ...USERS[savedCode] };
+      showRubriques();
+    }
+  </script>
+
+</body>
+</html>
