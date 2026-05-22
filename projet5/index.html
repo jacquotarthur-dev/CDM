@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <meta name="color-scheme" content="dark" />
-  <title>Espace commun</title>
+  <title>Idées du Malaise</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -16,11 +16,11 @@
       --muted:    #555;
 
       /* Rubriques — teintes neutres */
-      --football: #4a6741;
-      --tennis:   #4a5a6e;
-      --basket:   #6e4a4a;
-      --f1:       #6e634a;
-      --golf:     #4a6466;
+      --Trips: #4a6741;
+      --Activités:   #4a5a6e;
+      --À manger et à boire:   #6e4a4a;
+      --Appli:       #6e634a;
+      --Déchetterie:     #4a6466;
 
       /* Utilisateurs — couleurs vibrantes */
       --u1: #e05c5c;
@@ -179,11 +179,11 @@
       letter-spacing: 1px;
     }
 
-    .rubrique-card.football { background: rgba(74,103,65,0.25); border-color: rgba(74,103,65,0.4); }
-    .rubrique-card.tennis   { background: rgba(74,90,110,0.25); border-color: rgba(74,90,110,0.4); }
-    .rubrique-card.basket   { background: rgba(110,74,74,0.25); border-color: rgba(110,74,74,0.4); }
-    .rubrique-card.f1       { background: rgba(110,99,74,0.25); border-color: rgba(110,99,74,0.4); }
-    .rubrique-card.golf     { background: rgba(74,100,102,0.25); border-color: rgba(74,100,102,0.4); }
+    .rubrique-card.Trips { background: rgba(74,103,65,0.25); border-color: rgba(74,103,65,0.4); }
+    .rubrique-card.Activités   { background: rgba(74,90,110,0.25); border-color: rgba(74,90,110,0.4); }
+    .rubrique-card.À manger et à boire   { background: rgba(110,74,74,0.25); border-color: rgba(110,74,74,0.4); }
+    .rubrique-card.Appli       { background: rgba(110,99,74,0.25); border-color: rgba(110,99,74,0.4); }
+    .rubrique-card.Déchetterie     { background: rgba(74,100,102,0.25); border-color: rgba(74,100,102,0.4); }
 
     .back-btn {
       position: fixed;
@@ -387,7 +387,7 @@
   <!-- ══ CONNEXION ══ -->
   <div id="screen-login">
     <div>
-      <p class="login-title">Espace<br><em>commun</em></p>
+      <p class="login-title">Idées<br><em>de Malaise</em></p>
     </div>
     <p class="login-sub">Code personnel</p>
     <input class="login-input" id="login-input" type="password" maxlength="10" placeholder="····" />
@@ -398,7 +398,7 @@
   <!-- ══ RUBRIQUES ══ -->
   <div id="screen-rubriques">
     <div class="top-bar">
-      <span class="app-title">Boîte commune</span>
+      <span class="app-title">Envoyez vos idées</span>
       <span class="user-badge" id="user-badge"></span>
     </div>
     <div class="rubriques-grid" id="rubriques-grid"></div>
@@ -461,28 +461,28 @@
     // UTILISATEURS — modifie noms et codes ici
     // ─────────────────────────────────────────
     const USERS = {
-      "1111": { name: "Utilisateur 1", color: "#e05c5c" },
-      "2222": { name: "Utilisateur 2", color: "#e08c3a" },
-      "3333": { name: "Utilisateur 3", color: "#d4c137" },
-      "4444": { name: "Utilisateur 4", color: "#5cb85c" },
-      "5555": { name: "Utilisateur 5", color: "#3ab8b8" },
-      "6666": { name: "Utilisateur 6", color: "#5c8de0" },
-      "7777": { name: "Utilisateur 7", color: "#a05ce0" },
-      "8888": { name: "Utilisateur 8", color: "#e05ca8" },
+      "1111": { name: "Drenculé", color: "#e05c5c" },
+      "2222": { name: "Omerta Chinoise", color: "#e08c3a" },
+      "3333": { name: "Le Prince sur les biscuits", color: "#d4c137" },
+      "4444": { name: "Badibonga", color: "#5cb85c" },
+      "5555": { name: "Veigar", color: "#3ab8b8" },
+      "6666": { name: "Phacochère", color: "#5c8de0" },
+      "7777": { name: "Poliakov", color: "#a05ce0" },
+      "4136": { name: "Omniscience", color: "#e05ca8" },
     };
 
     // Code admin — peut supprimer tous les messages
-    const ADMIN_CODE = "0000";
+    const ADMIN_CODE = "4136";
 
     // ─────────────────────────────────────────
     // RUBRIQUES — ajoute des rubriques ici
     // ─────────────────────────────────────────
     const RUBRIQUES = [
-      { id: "football", name: "Football", cls: "football" },
-      { id: "tennis",   name: "Tennis",   cls: "tennis"   },
-      { id: "basket",   name: "Basket",   cls: "basket"   },
-      { id: "f1",       name: "F1",       cls: "f1"       },
-      { id: "golf",     name: "Golf",     cls: "golf"     },
+      { id: "Trips", name: "Trips", cls: "Trips" },
+      { id: "Activités",   name: "Activités",   cls: "Activités"   },
+      { id: "À manger et à boire",   name: "À manger et à boire",   cls: "À manger et à boire"   },
+      { id: "Appli",       name: "Appli",       cls: "Appli"       },
+      { id: "Déchetterie",     name: "Déchetterie",     cls: "Déchetterie"     },
     ];
 
     // ── État ──
