@@ -4,10 +4,10 @@
   vertical-align: baseline;
 }
 html {
-  font-family: system-ui, sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 body {
-  background-color: #101010;
+  background-color: #0d0d0d;
   display: grid;
   grid-template-columns: 1fr;
   height: 100vh;
@@ -209,9 +209,9 @@ body {
 button {
   align-self: center;
   background-color: #efefef;
-  border-radius: 10%;
+  border-radius: 40%;
   color: #333;
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 500;
   justify-self: center;
   padding: 0.5rem 1rem;
