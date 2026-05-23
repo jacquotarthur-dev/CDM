@@ -48,14 +48,7 @@
       text-decoration: none;
     }
 
-    /* — Wrapper icône (pour le liseret) — */
-    .icon-wrap {
-      position: relative;
-      width: 100px;
-      height: 100px;
-      border-radius: 22px;
-      overflow: visible; /* le canvas SVG sort légèrement */
-    }
+
 
     /* Icône image */
     .icon-wrap img {
@@ -99,59 +92,9 @@
 
     .cell.wip .app-name { color: transparent; }
 
-    /* — Liseret SVG — */
-    .glow-ring {
-      position: absolute;
-      inset: -3px;
-      width: calc(100% + 6px);
-      height: calc(100% + 6px);
-      pointer-events: none;
-      border-radius: 25px;
-      overflow: visible;
-    }
-
-    .ring-track {
-      fill: none;
-      stroke: rgba(255,255,255,0.08);
-      stroke-width: 2;
-    }
-
-    .ring-light {
-      fill: none;
-      stroke: rgba(255,255,255,0.85);
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-dasharray: 30 300;
-      stroke-dashoffset: 0;
-      filter: drop-shadow(0 0 4px rgba(255,255,255,0.9));
-    }
-
+  
  
-    /* Animation générique */
-    @keyframes sweep {
-      0%   { stroke-dashoffset: 0; opacity: 1; }
-      80%  { stroke-dashoffset: -330; opacity: 1; }
-      90%  { stroke-dashoffset: -330; opacity: 0; }
-      100% { stroke-dashoffset: -330; opacity: 0; }
-    }
 
-    .p1 .ring-light {
-      animation: sweep 1s cubic-bezier(0.4,0,0.2,1) infinite;
-      animation-play-state: paused;
-    }
-    .p2 .ring-light {
-      animation: sweep 1s cubic-bezier(0.4,0,0.2,1) infinite;
-      animation-play-state: paused;
-    }
-    .p3 .ring-light {
-      animation: sweep 1s cubic-bezier(0.4,0,0.2,1) infinite;
-      animation-play-state: paused;
-    }
-
-    .ring-light.running {
-      animation-play-state: running !important;
-    }
-  </style>
 
 
 
@@ -231,37 +174,10 @@
 
   </div>
 
-  <script>
+
 
  
-    // Décalages en ms pour chaque icône active
-    const delays = { p1: 0, p2: 3000, p3: 6000 };
-    const interval = 10000; // toutes les 10s
-
-    function triggerRing(selector, delay) {
-      setTimeout(function fire() {
-        const ring = document.querySelector('.' + selector + ' .ring-light');
-        if (!ring) return;
-        ring.classList.remove('running');
-        void ring.offsetWidth; // reflow pour reset
-        ring.classList.add('running');
-
-        // Retire la classe après 1s (durée de l'anim) pour permettre le reset au prochain cycle
-        setTimeout(() => ring.classList.remove('running'), 1000);
-
-        setTimeout(fire, interval);
-      }, delay);
-    }
-
-    triggerRing('p1', delays.p1);
-    triggerRing('p2', delays.p2);
-    triggerRing('p3', delays.p3);
-  </script>
-
-
-
-
-
+  
   
 <style>
   #lock-screen {
