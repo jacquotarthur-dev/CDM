@@ -321,7 +321,7 @@
     // doivent porter le même nom que "file" dans ton dossier projet2/
     // =============================================
     const TRACKS = [
-      { title: "LAURALOL",                            artist: "Alexis",            file: "LAURALOL" },
+      { title: "********",                            artist: "Alexis",            file: "LAURALOL_C" },
       { title: "ALICE ÇA GLISSE",                     artist: "Noé",               file: "ALICE ÇA GLISSE" },
       { title: "LE BIG MAKÉLÉLÉ",                     artist: "Arthur et Alexis",  file: "LE BIG MAKÉLÉLÉ" }, 
       { title: "LE BIG TASTYCULE",                    artist: "Arthur et Alexis",  file: "LE BIG TASTYCULE" },
@@ -354,7 +354,7 @@
       card.className = 'single-card';
       card.innerHTML = `
         <div class="cover-wrap">
-          <img class="cover-img" src="./${track.file}.png" alt="${track.title}" />
+          <img class="cover-img" src="./${track.file}.webp" alt="${track.title}" />
           <div class="disc"></div>
         </div>
         <div class="single-info">
@@ -383,7 +383,7 @@
 
     function loadTrack(index) {
       const t = TRACKS[index];
-      document.getElementById('player-img').src = `./${t.file}.png`;
+      document.getElementById('player-img').src = `./${t.file}.webp`;
       document.getElementById('player-title').textContent = t.title;
       document.getElementById('player-artist').textContent = t.artist;
       audio.src = `./${t.file}.mp3`;
