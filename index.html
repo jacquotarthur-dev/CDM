@@ -241,12 +241,16 @@
   }
 
   // ── Écoute Firestore (totalSeconds) ──
-  onSnapshot(counterRef, snap => {
-    if (snap.exists()) {
-      totalSeconds = snap.data().totalSeconds || 0;
-      displaySeconds(totalSeconds);
-    }
-  });
+onSnapshot(counterRef, snap => {
+  if (snap.exists()) {
+    totalSeconds = snap.data().totalSeconds || 0;
+
+  } else {
+    // Initialise le document s'il n'existe pas encore
+    import { setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    setDoc(counterRef, { totalSeconds: 0 });
+  }
+});
 
   // ── Écoute Realtime DB (activeUsers) ──
   onValue(ref(rtdb, 'activeUsers'), snap => {
@@ -254,18 +258,16 @@
   });
 
   // ── Tick local (toutes les secondes) ──
-  function startTick() {
-    localInterval = setInterval(async () => {
-      const add = Math.max(1, activeCount);
-      totalSeconds += add;
-      displaySeconds(totalSeconds);
-      // Sauvegarde dans Firestore
-      await runTransaction(counterRef, current => {
-        const data = current.data() || { totalSeconds: 0 };
-        return { totalSeconds: Math.max(data.totalSeconds, totalSeconds) };
-      });
-    }, 1000);
-  }
+function startTick() {
+  localInterval = setInterval(async () => {
+    const add = Math.max(1, activeCount);
+    // On incrémente directement dans Firestore sans passer par la valeur locale
+    await runTransaction(counterRef, current => {
+      const data = current.data() || { totalSeconds: 0 };
+      return { totalSeconds: data.totalSeconds + add };
+    });
+  }, 1000);
+}
 
   function stopTick() {
     clearInterval(localInterval);
