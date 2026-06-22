@@ -114,6 +114,16 @@
 </head>
 <body>
 
+<!-- Compteur -->
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:48px;position:relative;z-index:1;">
+  <p style="font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#555;">Paul nous doit :</p>
+  <p id="counter-display" style="font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:500;letter-spacing:4px;color:#fff;">00j : 00h : 00m : 00s</p>
+  <button id="counter-btn" onclick="toggleCounter()"
+    style="margin-top:4px;background:none;border:1px solid #222;border-radius:20px;color:#444;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:8px 20px;cursor:pointer;">
+    Je l'attends
+  </button>
+</div>
+  
   
   <div class="grid">
 
@@ -187,7 +197,103 @@
 
   </div>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, onSnapshot, runTransaction, serverTimestamp, increment }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getDatabase, ref, onDisconnect, set, remove, onValue }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+  const firebaseConfig = {
+    apiKey: "AIzaSyCgP0hd88OZc_WWGsS0kAUBOumAXeos07I",
+    authDomain: "blog-cdm.firebaseapp.com",
+    projectId: "blog-cdm",
+    storageBucket: "blog-cdm.firebasestorage.app",
+    messagingSenderId: "727621219684",
+    appId: "1:727621219684:web:a4717bf808b7ea8fb8b671",
+    databaseURL: "https://blog-cdm-default-rtdb.europe-west1.firebaseio.com"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const rtdb = getDatabase(app);
+
+  // Référence du document compteur dans Firestore
+  const counterRef = doc(db, 'hub', 'counter');
+
+  // Clé unique pour ce visiteur dans Realtime DB
+  const visitorId = Math.random().toString(36).slice(2);
+  const presenceRef = ref(rtdb, `activeUsers/${visitorId}`);
+
+  let isActive = false;
+  let localInterval = null;
+  let totalSeconds = 0;
+  let activeCount = 0;
+
+  // ── Affichage ──
+  function displaySeconds(s) {
+    const j = Math.floor(s / 86400);
+    const h = Math.floor((s % 86400) / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    document.getElementById('counter-display').textContent =
+      `${String(j).padStart(2,'0')}j : ${String(h).padStart(2,'0')}h : ${String(m).padStart(2,'0')}m : ${String(sec).padStart(2,'0')}s`;
+  }
+
+  // ── Écoute Firestore (totalSeconds) ──
+  onSnapshot(counterRef, snap => {
+    if (snap.exists()) {
+      totalSeconds = snap.data().totalSeconds || 0;
+      displaySeconds(totalSeconds);
+    }
+  });
+
+  // ── Écoute Realtime DB (activeUsers) ──
+  onValue(ref(rtdb, 'activeUsers'), snap => {
+    activeCount = snap.exists() ? Object.keys(snap.val()).length : 0;
+  });
+
+  // ── Tick local (toutes les secondes) ──
+  function startTick() {
+    localInterval = setInterval(async () => {
+      const add = Math.max(1, activeCount);
+      totalSeconds += add;
+      displaySeconds(totalSeconds);
+      // Sauvegarde dans Firestore
+      await runTransaction(counterRef, current => {
+        const data = current.data() || { totalSeconds: 0 };
+        return { totalSeconds: Math.max(data.totalSeconds, totalSeconds) };
+      });
+    }, 1000);
+  }
+
+  function stopTick() {
+    clearInterval(localInterval);
+    localInterval = null;
+  }
+
+  // ── Bouton ──
+  window.toggleCounter = async function() {
+    const btn = document.getElementById('counter-btn');
+    if (!isActive) {
+      isActive = true;
+      btn.textContent = 'Il est là !';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#444';
+      // Enregistre la présence, auto-supprimée à la déconnexion
+      await set(presenceRef, true);
+      onDisconnect(presenceRef).remove();
+      startTick();
+    } else {
+      isActive = false;
+      btn.textContent = 'Je l\'attends';
+      btn.style.color = '#444';
+      btn.style.borderColor = '#222';
+      await remove(presenceRef);
+      stopTick();
+    }
+  };
+</script>
   
 </body>
 </html>
