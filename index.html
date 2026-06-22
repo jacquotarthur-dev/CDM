@@ -199,7 +199,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, onSnapshot, runTransaction, serverTimestamp, increment }
+  import { getFirestore, doc, onSnapshot, runTransaction, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getDatabase, ref, onDisconnect, set, remove, onValue }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -218,10 +218,7 @@
   const db  = getFirestore(app);
   const rtdb = getDatabase(app);
 
-  // Référence du document compteur dans Firestore
   const counterRef = doc(db, 'hub', 'counter');
-
-  // Clé unique pour ce visiteur dans Realtime DB
   const visitorId = Math.random().toString(36).slice(2);
   const presenceRef = ref(rtdb, `activeUsers/${visitorId}`);
 
@@ -241,16 +238,14 @@
   }
 
   // ── Écoute Firestore (totalSeconds) ──
-onSnapshot(counterRef, snap => {
-  if (snap.exists()) {
-    totalSeconds = snap.data().totalSeconds || 0;
-
-  } else {
-    // Initialise le document s'il n'existe pas encore
-    import { setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    setDoc(counterRef, { totalSeconds: 0 });
-  }
-});
+  onSnapshot(counterRef, snap => {
+    if (snap.exists()) {
+      totalSeconds = snap.data().totalSeconds || 0;
+      displaySeconds(totalSeconds);
+    } else {
+      setDoc(counterRef, { totalSeconds: 0 });
+    }
+  });
 
   // ── Écoute Realtime DB (activeUsers) ──
   onValue(ref(rtdb, 'activeUsers'), snap => {
@@ -258,16 +253,15 @@ onSnapshot(counterRef, snap => {
   });
 
   // ── Tick local (toutes les secondes) ──
-function startTick() {
-  localInterval = setInterval(async () => {
-    const add = Math.max(1, activeCount);
-    // On incrémente directement dans Firestore sans passer par la valeur locale
-    await runTransaction(counterRef, current => {
-      const data = current.data() || { totalSeconds: 0 };
-      return { totalSeconds: data.totalSeconds + add };
-    });
-  }, 1000);
-}
+  function startTick() {
+    localInterval = setInterval(async () => {
+      const add = Math.max(1, activeCount);
+      await runTransaction(counterRef, current => {
+        const data = current.data() || { totalSeconds: 0 };
+        return { totalSeconds: data.totalSeconds + add };
+      });
+    }, 1000);
+  }
 
   function stopTick() {
     clearInterval(localInterval);
@@ -282,7 +276,6 @@ function startTick() {
       btn.textContent = 'Il est là !';
       btn.style.color = '#fff';
       btn.style.borderColor = '#444';
-      // Enregistre la présence, auto-supprimée à la déconnexion
       await set(presenceRef, true);
       onDisconnect(presenceRef).remove();
       startTick();
@@ -301,3 +294,4 @@ function startTick() {
 </html>
 
 </html>
+
