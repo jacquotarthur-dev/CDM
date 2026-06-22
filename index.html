@@ -253,15 +253,16 @@
   });
 
   // ── Tick local (toutes les secondes) ──
-  function startTick() {
-    localInterval = setInterval(async () => {
-      const add = Math.max(1, activeCount);
-      await runTransaction(counterRef, current => {
-        const data = current.data() || { totalSeconds: 0 };
-        return { totalSeconds: data.totalSeconds + add };
-      });
-    }, 1000);
-  }
+function startTick() {
+  localInterval = setInterval(async () => {
+    const add = Math.max(1, activeCount);
+    await runTransaction(db, async (transaction) => {
+      const snap = await transaction.get(counterRef);
+      const current = snap.exists() ? snap.data().totalSeconds || 0 : 0;
+      transaction.set(counterRef, { totalSeconds: current + add });
+    });
+  }, 1000);
+}
 
   function stopTick() {
     clearInterval(localInterval);
