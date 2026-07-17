@@ -118,10 +118,37 @@
 <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:48px;position:relative;z-index:1;">
   <p style="font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#555;">Paul nous doit :</p>
   <p id="counter-display" style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:500;letter-spacing:3px;color:#fff;">00j : 00h : 00m : 00s</p>
-  <button id="counter-btn" onclick="toggleCounter()"
-    style="margin-top:4px;background:none;border:1px solid #222;border-radius:20px;color:#444;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:8px 20px;cursor:pointer;">
-    Je l'attends
+<div id="add-time-wrap" style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:4px;">
+  
+  <!-- Bouton pour ouvrir l'éditeur -->
+  <button id="counter-btn" onclick="toggleEditor()"
+    style="background:none;border:1px solid #222;border-radius:20px;color:#444;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:8px 20px;cursor:pointer;">
+    Ajouter du temps
   </button>
+
+  <!-- Éditeur (caché par défaut) -->
+  <div id="time-editor" style="display:none;flex-direction:column;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <input id="input-min" type="number" min="0" max="30" value="0"
+          style="width:60px;background:none;border:none;border-bottom:1px solid #333;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:28px;text-align:center;outline:none;" />
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;color:#444;">MIN</span>
+      </div>
+      <span style="color:#333;font-size:28px;font-family:'Barlow Condensed',sans-serif;">:</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <input id="input-sec" type="number" min="0" max="59" value="0"
+          style="width:60px;background:none;border:none;border-bottom:1px solid #333;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:28px;text-align:center;outline:none;" />
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;color:#444;">SEC</span>
+      </div>
+    </div>
+    <button onclick="addTime()"
+      style="background:none;border:1px solid #333;border-radius:20px;color:#888;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:8px 24px;cursor:pointer;">
+      Confirmer
+    </button>
+    <p id="add-err" style="font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;color:#e05c5c;opacity:0;">Max 30 minutes</p>
+  </div>
+
+</div>
 </div>
   
   
@@ -201,8 +228,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, doc, onSnapshot, runTransaction, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getDatabase, ref, onDisconnect, set, remove, onValue }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCgP0hd88OZc_WWGsS0kAUBOumAXeos07I",
@@ -210,84 +235,70 @@
     projectId: "blog-cdm",
     storageBucket: "blog-cdm.firebasestorage.app",
     messagingSenderId: "727621219684",
-    appId: "1:727621219684:web:a4717bf808b7ea8fb8b671",
-    databaseURL: "https://blog-cdm-default-rtdb.europe-west1.firebasedatabase.app/"
+    appId: "1:727621219684:web:a4717bf808b7ea8fb8b671"
   };
 
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
-  const rtdb = getDatabase(app);
-
   const counterRef = doc(db, 'hub', 'counter');
-  const visitorId = Math.random().toString(36).slice(2);
-  const presenceRef = ref(rtdb, `activeUsers/${visitorId}`);
-
-  let isActive = false;
-  let localInterval = null;
-  let totalSeconds = 0;
-  let activeCount = 0;
 
   // ── Affichage ──
   function displaySeconds(s) {
-    const j = Math.floor(s / 86400);
-    const h = Math.floor((s % 86400) / 3600);
-    const m = Math.floor((s % 3600) / 60);
+    const j   = Math.floor(s / 86400);
+    const h   = Math.floor((s % 86400) / 3600);
+    const m   = Math.floor((s % 3600) / 60);
     const sec = s % 60;
     document.getElementById('counter-display').textContent =
       `${String(j).padStart(2,'0')}j : ${String(h).padStart(2,'0')}h : ${String(m).padStart(2,'0')}m : ${String(sec).padStart(2,'0')}s`;
   }
 
-  // ── Écoute Firestore (totalSeconds) ──
+  // ── Écoute Firestore en temps réel ──
   onSnapshot(counterRef, snap => {
     if (snap.exists()) {
-      totalSeconds = snap.data().totalSeconds || 0;
-      displaySeconds(totalSeconds);
+      displaySeconds(snap.data().totalSeconds || 0);
     } else {
       setDoc(counterRef, { totalSeconds: 0 });
+      displaySeconds(0);
     }
   });
 
-  // ── Écoute Realtime DB (activeUsers) ──
-  onValue(ref(rtdb, 'activeUsers'), snap => {
-    activeCount = snap.exists() ? Object.keys(snap.val()).length : 0;
-  });
+  // ── Ouvre / ferme l'éditeur ──
+  window.toggleEditor = function() {
+    const editor = document.getElementById('time-editor');
+    const btn    = document.getElementById('counter-btn');
+    const open   = editor.style.display === 'none';
+    editor.style.display = open ? 'flex' : 'none';
+    btn.textContent = open ? 'Annuler' : 'Ajouter du temps';
+    btn.style.color = open ? '#888' : '#444';
+    document.getElementById('input-min').value = '0';
+    document.getElementById('input-sec').value = '0';
+    document.getElementById('add-err').style.opacity = '0';
+  };
 
-  // ── Tick local (toutes les secondes) ──
-function startTick() {
-  localInterval = setInterval(async () => {
-    const add = Math.max(1, activeCount);
+  // ── Ajouter du temps ──
+  window.addTime = async function() {
+    const min = parseInt(document.getElementById('input-min').value) || 0;
+    const sec = parseInt(document.getElementById('input-sec').value) || 0;
+    const toAdd = (min * 60) + sec;
+    const err = document.getElementById('add-err');
+
+    // Validation
+    if (toAdd <= 0) return;
+    if (toAdd > 1800) { // 30 mins max
+      err.style.opacity = '1';
+      return;
+    }
+
+    err.style.opacity = '0';
+
     await runTransaction(db, async (transaction) => {
       const snap = await transaction.get(counterRef);
       const current = snap.exists() ? snap.data().totalSeconds || 0 : 0;
-      transaction.set(counterRef, { totalSeconds: current + add });
+      transaction.set(counterRef, { totalSeconds: current + toAdd });
     });
-  }, 1000);
-}
 
-  function stopTick() {
-    clearInterval(localInterval);
-    localInterval = null;
-  }
-
-  // ── Bouton ──
-  window.toggleCounter = async function() {
-    const btn = document.getElementById('counter-btn');
-    if (!isActive) {
-      isActive = true;
-      btn.textContent = 'Il est là !';
-      btn.style.color = '#fff';
-      btn.style.borderColor = '#444';
-      await set(presenceRef, true);
-      onDisconnect(presenceRef).remove();
-      startTick();
-    } else {
-      isActive = false;
-      btn.textContent = 'Je l\'attends';
-      btn.style.color = '#444';
-      btn.style.borderColor = '#222';
-      await remove(presenceRef);
-      stopTick();
-    }
+    // Ferme l'éditeur après confirmation
+    toggleEditor();
   };
 </script>
   
