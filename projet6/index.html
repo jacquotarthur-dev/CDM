@@ -802,6 +802,8 @@
     function renderChart(q, container) {
       const votes  = q.votes || {};
       const counts = q.answers.map((_, i) => Object.values(votes).filter(v => v === i).length);
+      const total  = counts.reduce((a, b) => a + b, 0) || 1;
+
    counts.forEach((count, i) => {
   const slice = (count / total) * 2 * Math.PI;
   if (slice === 0) return;
