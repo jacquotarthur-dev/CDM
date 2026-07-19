@@ -802,7 +802,26 @@
     function renderChart(q, container) {
       const votes  = q.votes || {};
       const counts = q.answers.map((_, i) => Object.values(votes).filter(v => v === i).length);
-      const total  = counts.reduce((a, b) => a + b, 0) || 1;
+    counts.forEach((count, i) => {
+  const slice = (count / total) * 2 * Math.PI;
+  if (slice === 0) return;
+
+  // Cas spécial : cercle complet (une seule réponse)
+  if (slice >= 2 * Math.PI - 0.001) {
+    paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${PIE_COLORS[i % PIE_COLORS.length]}" opacity="0.85"/>`;
+    startAngle = endAngle;
+    return;
+  }
+
+  const endAngle = startAngle + slice;
+  const x1 = cx + r * Math.cos(startAngle);
+  const y1 = cy + r * Math.sin(startAngle);
+  const x2 = cx + r * Math.cos(endAngle);
+  const y2 = cy + r * Math.sin(endAngle);
+  const large = slice > Math.PI ? 1 : 0;
+  paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z" fill="${PIE_COLORS[i % PIE_COLORS.length]}" opacity="0.85"/>`;
+  startAngle = endAngle;
+});
 
       const wrap = document.createElement('div');
       wrap.className = 'chart-wrap';
@@ -891,7 +910,7 @@
           </div>
           <button class="add-answer-btn" onclick="addAnswer('${id}')">+ Ajouter une réponse</button>
         </div>
-
+        <button class="remove-question-btn" style="color:var(--muted)" onclick="duplicateQuestion('${id}')">Dupliquer</button>
         <button class="remove-question-btn" onclick="removeQuestion('${id}')">Supprimer cette question</button>
       `;
 
@@ -911,6 +930,37 @@
       });
     }
 
+    window.duplicateQuestion = function(sourceId) {
+  const sourceText = document.getElementById(`q-text-${sourceId}`)?.value || '';
+  const sourceAnswers = [...document.querySelectorAll(`#answers-${sourceId} input`)].map(i => i.value);
+
+  // Crée un nouveau bloc
+  addQuestionBlock();
+
+  // Récupère le dernier bloc créé
+  const newId = questionBlocks[questionBlocks.length - 1].id;
+
+  // Copie le texte
+  setTimeout(() => {
+    const newText = document.getElementById(`q-text-${newId}`);
+    if (newText) newText.value = sourceText;
+
+    // Copie les réponses
+    const answersContainer = document.getElementById(`answers-${newId}`);
+    if (!answersContainer) return;
+
+    // Vide les réponses par défaut
+    answersContainer.innerHTML = '';
+
+    sourceAnswers.forEach((ans, i) => {
+      const row = document.createElement('div');
+      row.className = 'answer-row';
+      row.innerHTML = `<input type="text" placeholder="Réponse ${i + 1}" value="${ans}" /><button class="remove-answer" onclick="removeAnswer(this)">×</button>`;
+      answersContainer.appendChild(row);
+    });
+  }, 50);
+};
+
     window.addAnswer = function(qid) {
       const container = document.getElementById(`answers-${qid}`);
       const count = container.children.length + 1;
@@ -926,16 +976,19 @@
     };
 
     // Upload image vers Cloudinary
-    window.handleImageUpload = async function(input, qid) {
-      const file = input.files[0];
-      if (!file) return;
+ window.handleImageUpload = async function(input, qid) {
+  const file = input.files[0];
+  if (!file) return;
 
-      const label = document.getElementById(`img-label-${qid}`);
-      label.textContent = 'Upload…';
+  const label = document.getElementById(`img-label-${qid}`);
+  label.textContent = 'Upload…';
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', UPLOAD_PRESET);
+  // Recadrage carré centré + compression 800x800
+  const compressed = await cropAndCompress(file, 800);
+
+  const formData = new FormData();
+  formData.append('file', compressed);
+  formData.append('upload_preset', UPLOAD_PRESET);
 
       try {
         const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method:'POST', body:formData });
@@ -955,6 +1008,30 @@
         label.textContent = 'Erreur upload';
       }
     };
+
+    function cropAndCompress(file, size) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Recadrage carré centré
+      const min = Math.min(img.width, img.height);
+      const sx  = (img.width  - min) / 2;
+      const sy  = (img.height - min) / 2;
+
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+
+      canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.85);
+    };
+    img.src = url;
+  });
+}
 
     // Publier le questionnaire
     window.submitPoll = async function() {
