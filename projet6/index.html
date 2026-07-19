@@ -802,14 +802,14 @@
     function renderChart(q, container) {
       const votes  = q.votes || {};
       const counts = q.answers.map((_, i) => Object.values(votes).filter(v => v === i).length);
-    counts.forEach((count, i) => {
+   counts.forEach((count, i) => {
   const slice = (count / total) * 2 * Math.PI;
   if (slice === 0) return;
 
   // Cas spécial : cercle complet (une seule réponse)
   if (slice >= 2 * Math.PI - 0.001) {
     paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${PIE_COLORS[i % PIE_COLORS.length]}" opacity="0.85"/>`;
-    startAngle = endAngle;
+    startAngle += slice;
     return;
   }
 
