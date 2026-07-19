@@ -667,13 +667,25 @@
 
         const card = document.createElement('div');
         card.className = 'poll-card';
-        card.innerHTML = `
-          <div class="poll-card-title">${p.title}</div>
-          <div class="poll-card-meta">Créé par <span style="color:${p.authorColor}">${p.authorName}</span> · ${qCount} question${qCount > 1 ? 's' : ''}</div>
-          ${hasAnswered ? '<span class="poll-card-answered">✓ Complété</span>' : ''}
-        `;
+     card.innerHTML = `
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+    <div>
+      <div class="poll-card-title">${p.title}</div>
+      <div class="poll-card-meta">Créé par <span style="color:${p.authorColor}">${p.authorName}</span> · ${qCount} question${qCount > 1 ? 's' : ''}</div>
+      ${hasAnswered ? '<span class="poll-card-answered">✓ Complété</span>' : ''}
+    </div>
+    ${currentUser.code === ADMIN_CODE ? `<button class="delete-poll-btn" data-id="${docSnap.id}" style="background:none;border:none;color:#e05c5c44;font-size:18px;cursor:pointer;flex-shrink:0;padding:0 0 0 8px;line-height:1;">×</button>` : ''}
+  </div>
+`;
         card.addEventListener('click', () => openPoll(docSnap.id, p));
         list.appendChild(card);
+        card.querySelector('.delete-poll-btn')?.addEventListener('click', async (e) => {
+  e.stopPropagation();
+  if (!confirm('Supprimer ce questionnaire ?')) return;
+  const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  await deleteDoc(doc(db, 'polls', docSnap.id));
+  loadPolls();
+});
       });
     }
 
