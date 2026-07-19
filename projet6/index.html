@@ -799,73 +799,57 @@
     // ═══════════════════════════════
     const PIE_COLORS = ['#e05c5c','#5c8de0','#5cb85c','#d4c137','#a05ce0','#e08c3a','#3ab8b8','#e05ca8'];
 
-    function renderChart(q, container) {
-      const votes  = q.votes || {};
-      const counts = q.answers.map((_, i) => Object.values(votes).filter(v => v === i).length);
-      const total  = counts.reduce((a, b) => a + b, 0) || 1;
+   function renderChart(q, container) {
+  const votes  = q.votes || {};
+  const counts = q.answers.map((_, i) => Object.values(votes).filter(v => v === i).length);
+  const total  = counts.reduce((a, b) => a + b, 0) || 1;
 
-   counts.forEach((count, i) => {
-  const slice = (count / total) * 2 * Math.PI;
-  if (slice === 0) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'chart-wrap';
 
-  // Cas spécial : cercle complet (une seule réponse)
-  if (slice >= 2 * Math.PI - 0.001) {
-    paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${PIE_COLORS[i % PIE_COLORS.length]}" opacity="0.85"/>`;
-    startAngle += slice;
-    return;
-  }
+  const size = 180, cx = 90, cy = 90, r = 80;
+  let startAngle = -Math.PI / 2;
+  let paths = '';
 
-  const endAngle = startAngle + slice;
-  const x1 = cx + r * Math.cos(startAngle);
-  const y1 = cy + r * Math.sin(startAngle);
-  const x2 = cx + r * Math.cos(endAngle);
-  const y2 = cy + r * Math.sin(endAngle);
-  const large = slice > Math.PI ? 1 : 0;
-  paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z" fill="${PIE_COLORS[i % PIE_COLORS.length]}" opacity="0.85"/>`;
-  startAngle = endAngle;
-});
+  counts.forEach((count, i) => {
+    const slice = (count / total) * 2 * Math.PI;
+    if (slice === 0) return;
 
-      const wrap = document.createElement('div');
-      wrap.className = 'chart-wrap';
-
-      // SVG Pie
-      const size = 180, cx = 90, cy = 90, r = 80;
-      let startAngle = -Math.PI / 2;
-      let paths = '';
-
-      counts.forEach((count, i) => {
-        const slice = (count / total) * 2 * Math.PI;
-        if (slice === 0) return;
-        const endAngle = startAngle + slice;
-        const x1 = cx + r * Math.cos(startAngle);
-        const y1 = cy + r * Math.sin(startAngle);
-        const x2 = cx + r * Math.cos(endAngle);
-        const y2 = cy + r * Math.sin(endAngle);
-        const large = slice > Math.PI ? 1 : 0;
-        paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z" fill="${PIE_COLORS[i % PIE_COLORS.length]}" opacity="0.85"/>`;
-        startAngle = endAngle;
-      });
-
-      // Cercle central vide
-      paths += `<circle cx="${cx}" cy="${cy}" r="30" fill="#0a0a0a"/>`;
-
-      wrap.innerHTML = `
-        <svg class="pie-svg" viewBox="0 0 ${size} ${size}">${paths}</svg>
-        <div class="chart-legend">
-          ${q.answers.map((ans, i) => {
-            const pct = Math.round((counts[i] / total) * 100);
-            const myVote = votes[currentUser.code] === i;
-            return `<div class="legend-row">
-              <div class="legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></div>
-              <span style="${myVote ? 'color:#fff' : 'color:var(--muted)'}">${ans}${myVote ? ' ✓' : ''}</span>
-              <span class="legend-pct">${pct}%</span>
-            </div>`;
-          }).join('')}
-        </div>
-      `;
-
-      container.appendChild(wrap);
+    if (slice >= 2 * Math.PI - 0.001) {
+      paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${PIE_COLORS[i % PIE_COLORS.length]}" opacity="0.85"/>`;
+      startAngle += slice;
+      return;
     }
+
+    const endAngle = startAngle + slice;
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    const large = slice > Math.PI ? 1 : 0;
+    paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z" fill="${PIE_COLORS[i % PIE_COLORS.length]}" opacity="0.85"/>`;
+    startAngle = endAngle;
+  });
+
+  paths += `<circle cx="${cx}" cy="${cy}" r="30" fill="#0a0a0a"/>`;
+
+  wrap.innerHTML = `
+    <svg class="pie-svg" viewBox="0 0 ${size} ${size}">${paths}</svg>
+    <div class="chart-legend">
+      ${q.answers.map((ans, i) => {
+        const pct = Math.round((counts[i] / total) * 100);
+        const myVote = votes[currentUser.code] === i;
+        return `<div class="legend-row">
+          <div class="legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></div>
+          <span style="${myVote ? 'color:#fff' : 'color:var(--muted)'}">${ans}${myVote ? ' ✓' : ''}</span>
+          <span class="legend-pct">${pct}%</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  container.appendChild(wrap);
+}
 
     // ═══════════════════════════════
     // CRÉATION DE QUESTIONNAIRE
