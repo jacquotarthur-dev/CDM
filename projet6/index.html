@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="color-scheme" content="dark" />
+  <title>Sondages</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600&family=Barlow:wght@300;400;500&display=swap');
+
+    :root {
+      --bg:      #0a0a0a;
+      --surface: #141414;
+      --border:  #1f1f1f;
+      --text:    #e8e8e8;
+      --muted:   #444;
+      --u1: #e05c5c; --u2: #e08c3a; --u3: #d4c137;
+      --u4: #5cb85c; --u5: #3ab8b8; --u6: #5c8de0;
+      --u7: #a05ce0; --u8: #e05ca8;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ── Utilitaires ── */
+    .screen { display:none; flex-direction:column; min-height:100dvh; }
+    .screen.active { display:flex; }
+    .hidden { display:none !important; }
+
+    /* ══════════════════════════════
+       CONNEXION
+    ══════════════════════════════ */
+    #s-login {
+      align-items:center;
+      justify-content:center;
+      gap:28px;
+      padding:40px 32px;
+    }
+
+    .login-title {
+      font-family:'Barlow Condensed', sans-serif;
+      font-size:32px;
+      font-weight:500;
+      letter-spacing:2px;
+      text-align:center;
+    }
+
+    .login-sub {
+      font-size:11px;
+      letter-spacing:3px;
+      color:var(--muted);
+      text-transform:uppercase;
+      margin-top:-16px;
+    }
+
+    .login-input {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:14px;
+      color:var(--text);
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:22px;
+      text-align:center;
+      letter-spacing:8px;
+      padding:14px 24px;
+      width:200px;
+      outline:none;
+    }
+
+    .btn-primary {
+      background:var(--text);
+      color:var(--bg);
+      border:none;
+      border-radius:14px;
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:13px;
+      font-weight:600;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      padding:13px 36px;
+      cursor:pointer;
+    }
+
+    .btn-ghost {
+      background:none;
+      border:1px solid var(--border);
+      border-radius:14px;
+      color:var(--muted);
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:12px;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      padding:11px 28px;
+      cursor:pointer;
+    }
+
+    .err-msg {
+      font-size:11px;
+      color:#e05c5c;
+      letter-spacing:1px;
+      opacity:0;
+      transition:opacity .3s;
+    }
+
+    /* ══════════════════════════════
+       LISTE QUESTIONNAIRES
+    ══════════════════════════════ */
+    #s-list { padding:0 0 80px; }
+
+    .top-bar {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:20px 20px 16px;
+      border-bottom:1px solid var(--border);
+      position:sticky;
+      top:0;
+      background:var(--bg);
+      z-index:10;
+    }
+
+    .top-bar-title {
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:20px;
+      font-weight:500;
+      letter-spacing:1px;
+    }
+
+    .user-chip {
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:11px;
+      font-weight:600;
+      padding:5px 12px;
+      border-radius:20px;
+      color:#000;
+      letter-spacing:1px;
+    }
+
+    .add-btn {
+      width:34px; height:34px;
+      border-radius:50%;
+      background:var(--surface);
+      border:1px solid var(--border);
+      color:var(--muted);
+      font-size:20px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      flex-shrink:0;
+    }
+
+    .poll-list { padding:12px 16px; display:flex; flex-direction:column; gap:10px; }
+
+    .poll-card {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:18px 18px 14px;
+      cursor:pointer;
+      transition:border-color .15s;
+    }
+
+    .poll-card:active { border-color:#333; }
+
+    .poll-card-title {
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:18px;
+      font-weight:500;
+      letter-spacing:.5px;
+      margin-bottom:4px;
+    }
+
+    .poll-card-meta {
+      font-size:11px;
+      color:var(--muted);
+      letter-spacing:.5px;
+    }
+
+    .poll-card-answered {
+      display:inline-block;
+      margin-top:8px;
+      font-size:10px;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      color:#3ab8b8;
+      opacity:.7;
+    }
+
+    .back-btn {
+      position:fixed;
+      bottom:24px;
+      left:50%;
+      transform:translateX(-50%);
+      background:none;
+      border:none;
+      color:rgba(255,255,255,.15);
+      cursor:pointer;
+      z-index:50;
+      text-decoration:none;
+      display:flex;
+    }
+
+    /* ══════════════════════════════
+       CRÉATION QUESTIONNAIRE
+    ══════════════════════════════ */
+    #s-create { padding:0 0 100px; }
+
+    .create-header {
+      padding:20px 20px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      gap:12px;
+      position:sticky; top:0;
+      background:var(--bg);
+      z-index:10;
+    }
+
+    .back-icon {
+      background:none; border:none;
+      color:var(--muted); cursor:pointer;
+      display:flex; flex-shrink:0;
+    }
+
+    .section-label {
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:10px;
+      letter-spacing:3px;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .field-input {
+      width:100%;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:12px;
+      color:var(--text);
+      font-family:'Barlow',sans-serif;
+      font-size:14px;
+      padding:12px 14px;
+      outline:none;
+    }
+
+    .create-body { padding:20px 16px; display:flex; flex-direction:column; gap:24px; }
+
+    .question-block {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .question-num {
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:11px;
+      letter-spacing:2px;
+      color:var(--muted);
+      text-transform:uppercase;
+    }
+
+    .img-upload-label {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:1px;
+    }
+
+    .img-preview {
+      width:60px; height:60px;
+      border-radius:10px;
+      object-fit:cover;
+      display:none;
+    }
+
+    .answer-row {
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .answer-row input {
+      flex:1;
+      background:transparent;
+      border:none;
+      border-bottom:1px solid var(--border);
+      color:var(--text);
+      font-family:'Barlow',sans-serif;
+      font-size:13px;
+      padding:6px 4px;
+      outline:none;
+    }
+
+    .remove-answer {
+      background:none; border:none;
+      color:var(--muted); font-size:18px;
+      cursor:pointer; line-height:1;
+      flex-shrink:0;
+    }
+
+    .add-answer-btn {
+      background:none; border:none;
+      color:var(--muted);
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:11px;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      cursor:pointer;
+      text-align:left;
+      padding:4px 0;
+    }
+
+    .remove-question-btn {
+      background:none; border:none;
+      color:#e05c5c44;
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:10px;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      cursor:pointer;
+      align-self:flex-end;
+    }
+
+    .add-question-card {
+      border:1px dashed var(--border);
+      border-radius:16px;
+      padding:20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      cursor:pointer;
+      color:var(--muted);
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:12px;
+      letter-spacing:2px;
+      text-transform:uppercase;
+    }
+
+    .sticky-footer {
+      position:fixed;
+      bottom:0; left:0; right:0;
+      background:var(--bg);
+      border-top:1px solid var(--border);
+      padding:14px 20px 28px;
+      display:flex;
+      gap:10px;
+    }
+
+    /* ══════════════════════════════
+       QUESTIONNAIRE — RÉPONSE
+    ══════════════════════════════ */
+    #s-quiz {
+      align-items:stretch;
+    }
+
+    .quiz-header {
+      padding:20px 20px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      gap:12px;
+      position:sticky; top:0;
+      background:var(--bg); z-index:10;
+    }
+
+    .quiz-progress {
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:11px;
+      letter-spacing:2px;
+      color:var(--muted);
+      margin-left:auto;
+    }
+
+    .quiz-body {
+      flex:1;
+      padding:24px 20px 120px;
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+    }
+
+    .question-img {
+      width:100%;
+      aspect-ratio:1;
+      border-radius:16px;
+      object-fit:cover;
+      display:block;
+    }
+
+    .question-text {
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:22px;
+      font-weight:500;
+      line-height:1.25;
+    }
+
+    .answer-option {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px 16px;
+      cursor:pointer;
+      font-size:14px;
+      transition:border-color .15s, background .15s;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .answer-option.selected {
+      border-color:#555;
+      background:#1e1e1e;
+    }
+
+    .answer-option .radio {
+      width:16px; height:16px;
+      border-radius:50%;
+      border:1px solid var(--muted);
+      flex-shrink:0;
+      transition:background .15s, border-color .15s;
+    }
+
+    .answer-option.selected .radio {
+      background:var(--text);
+      border-color:var(--text);
+    }
+
+    /* ── Diagramme circulaire ── */
+    .chart-wrap {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:20px;
+      padding:8px 0;
+    }
+
+    .pie-svg { width:180px; height:180px; }
+
+    .chart-legend {
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .legend-row {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:13px;
+    }
+
+    .legend-dot {
+      width:10px; height:10px;
+      border-radius:50%;
+      flex-shrink:0;
+    }
+
+    .legend-pct {
+      margin-left:auto;
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:14px;
+      color:var(--muted);
+    }
+
+    .quiz-footer {
+      position:fixed;
+      bottom:0; left:0; right:0;
+      background:var(--bg);
+      border-top:1px solid var(--border);
+      padding:14px 20px 28px;
+      display:flex;
+      gap:10px;
+    }
+
+    .btn-primary { transition:opacity .15s; }
+    .btn-primary:active { opacity:.8; }
+    .btn-ghost:active { opacity:.7; }
+  </style>
+</head>
+<body>
+
+  <!-- ══ CONNEXION ══ -->
+  <div id="s-login" class="screen active">
+    <p class="login-title">Polls</p>
+    <p class="login-sub">Code personnel</p>
+    <input class="login-input" id="login-input" type="password" maxlength="10" placeholder="····" />
+    <p class="err-msg" id="login-err">Code incorrect</p>
+    <button class="btn-primary" onclick="tryLogin()">Entrer</button>
+  </div>
+
+  <!-- ══ LISTE ══ -->
+  <div id="s-list" class="screen">
+    <div class="top-bar">
+      <span class="top-bar-title">Questionnaires</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="user-chip" id="user-chip"></span>
+        <div class="add-btn" onclick="showCreate()">+</div>
+      </div>
+    </div>
+    <div class="poll-list" id="poll-list">
+      <p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;">Chargement…</p>
+    </div>
+    <a class="back-btn" href="../">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- ══ CRÉATION ══ -->
+  <div id="s-create" class="screen">
+    <div class="create-header">
+      <button class="back-icon" onclick="showList()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:500;">Nouveau questionnaire</span>
+    </div>
+    <div class="create-body" id="create-body">
+      <div>
+        <p class="section-label">Titre du questionnaire</p>
+        <input class="field-input" id="poll-title-input" type="text" placeholder="Ex: Quel joueur préférez-vous ?" />
+      </div>
+      <div id="questions-container"></div>
+      <div class="add-question-card" onclick="addQuestionBlock()">
+        <span style="font-size:18px;">+</span> Ajouter une question
+      </div>
+    </div>
+    <div class="sticky-footer">
+      <button class="btn-ghost" style="flex:1" onclick="showList()">Annuler</button>
+      <button class="btn-primary" style="flex:2" onclick="submitPoll()">Publier</button>
+    </div>
+  </div>
+
+  <!-- ══ QUIZ ══ -->
+  <div id="s-quiz" class="screen">
+    <div class="quiz-header">
+      <button class="back-icon" onclick="showList()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:500;flex:1;" id="quiz-title"></span>
+      <span class="quiz-progress" id="quiz-progress"></span>
+    </div>
+    <div class="quiz-body" id="quiz-body"></div>
+    <div class="quiz-footer" id="quiz-footer"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, onSnapshot, serverTimestamp, query, orderBy }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ── Firebase ──
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgP0hd88OZc_WWGsS0kAUBOumAXeos07I",
+      authDomain: "blog-cdm.firebaseapp.com",
+      projectId: "blog-cdm",
+      storageBucket: "blog-cdm.firebasestorage.app",
+      messagingSenderId: "727621219684",
+      appId: "1:727621219684:web:a4717bf808b7ea8fb8b671"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // ── Cloudinary ──
+    const CLOUD_NAME   = "myek8gus";
+    const UPLOAD_PRESET = "CDM Polls";
+
+    // ── Utilisateurs ──
+    const USERS = {
+      "4136": { name:"Omniscience", color:"#e05c5c" },
+      "9191": { name:"Utilisateur 2", color:"#e08c3a" },
+      "8282": { name:"Utilisateur 3", color:"#d4c137" },
+      "7373": { name:"Utilisateur 4", color:"#5cb85c" },
+      "6464": { name:"Utilisateur 5", color:"#3ab8b8" },
+      "4646": { name:"Utilisateur 6", color:"#5c8de0" },
+      "3737": { name:"Utilisateur 7", color:"#a05ce0" },
+      "2828": { name:"Utilisateur 8", color:"#e05ca8" },
+    };
+    const ADMIN_CODE = "4136";
+
+    // ── État ──
+    let currentUser = null;
+    let currentPoll = null;
+    let currentQIdx = 0;
+    let selectedAnswer = null;
+    let showingResults = false;
+    let questionBlocks = [];
+
+    // ═══════════════════════════════
+    // NAVIGATION
+    // ═══════════════════════════════
+    function show(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    window.showList   = () => { show('s-list'); loadPolls(); };
+    window.showCreate = () => { show('s-create'); initCreate(); };
+
+    // ═══════════════════════════════
+    // LOGIN
+    // ═══════════════════════════════
+    window.tryLogin = function() {
+      const code = document.getElementById('login-input').value.trim();
+      const err  = document.getElementById('login-err');
+      if (USERS[code] || code === ADMIN_CODE) {
+        currentUser = code === ADMIN_CODE
+          ? { code: ADMIN_CODE, name: "Admin", color: "#fff" }
+          : { code, ...USERS[code] };
+        sessionStorage.setItem('polls_user', code);
+        err.style.opacity = '0';
+        showList();
+      } else {
+        err.style.opacity = '1';
+        document.getElementById('login-input').value = '';
+      }
+    };
+
+    document.getElementById('login-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') window.tryLogin();
+    });
+
+    // ═══════════════════════════════
+    // LISTE DES POLLS
+    // ═══════════════════════════════
+    async function loadPolls() {
+      const chip = document.getElementById('user-chip');
+      chip.textContent = currentUser.name;
+      chip.style.background = currentUser.color;
+
+      const list = document.getElementById('poll-list');
+      list.innerHTML = '';
+
+      const q = query(collection(db, 'polls'), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        list.innerHTML = `<p style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;letter-spacing:1px;">Aucun questionnaire pour l'instant</p>`;
+        return;
+      }
+
+      snap.forEach(docSnap => {
+        const p = docSnap.data();
+        const qCount = p.questions ? p.questions.length : 0;
+        const hasAnswered = p.questions && p.questions.every(q =>
+          q.votes && q.votes[currentUser.code] !== undefined
+        );
+
+        const card = document.createElement('div');
+        card.className = 'poll-card';
+     card.innerHTML = `
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+    <div>
+      <div class="poll-card-title">${p.title}</div>
+      <div class="poll-card-meta">Créé par <span style="color:${p.authorColor}">${p.authorName}</span> · ${qCount} question${qCount > 1 ? 's' : ''}</div>
+      ${hasAnswered ? '<span class="poll-card-answered">✓ Complété</span>' : ''}
+    </div>
+   ${currentUser.code === ADMIN_CODE ? `
+  <div style="display:flex;gap:12px;align-items:center;">
+    <button class="reset-poll-btn" data-id="${docSnap.id}" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:0;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+      </svg>
+    </button>
+    <button class="delete-poll-btn" data-id="${docSnap.id}" style="background:none;border:none;color:#e05c5c44;font-size:18px;cursor:pointer;line-height:1;padding:0;">×</button>
+  </div>
+` : ''}
+  </div>
+`;
+        card.addEventListener('click', () => openPoll(docSnap.id, p));
+        list.appendChild(card);
+card.querySelector('.delete-poll-btn')?.addEventListener('click', async (e) => {
+  e.stopPropagation();
+  if (!confirm('Supprimer ce questionnaire ?')) return;
+  const { deleteDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  await deleteDoc(doc(db, 'polls', docSnap.id));
+  loadPolls();
+});
+
+card.querySelector('.reset-poll-btn')?.addEventListener('click', async (e) => {
+  e.stopPropagation();
+  if (!confirm('Réinitialiser les résultats de ce questionnaire pour tout le monde ?')) return;
+
+  const pollRef = doc(db, 'polls', docSnap.id);
+  const snap = await getDoc(pollRef);
+  const data = snap.data();
+
+  // Remet tous les votes à vide sur chaque question
+  const questions = data.questions.map(q => ({ ...q, votes: {} }));
+  await updateDoc(pollRef, { questions });
+  loadPolls();
+});
+      }); // fermeture snap.forEach
+    } // fermeture loadPolls
+
+    // ═══════════════════════════════
+    // OUVRIR UN POLL
+    // ═══════════════════════════════
+    async function openPoll(pollId, pollData) {
+      // Recharge les données fraîches
+      const snap = await getDoc(doc(db, 'polls', pollId));
+      currentPoll = { id: pollId, ...snap.data() };
+      currentQIdx = 0;
+      selectedAnswer = null;
+      showingResults = false;
+
+      document.getElementById('quiz-title').textContent = currentPoll.title;
+      show('s-quiz');
+      renderQuestion();
+    }
+
+    // ═══════════════════════════════
+    // RENDU QUESTION
+    // ═══════════════════════════════
+    function renderQuestion() {
+      const q = currentPoll.questions[currentQIdx];
+      const total = currentPoll.questions.length;
+      const hasVoted = q.votes && q.votes[currentUser.code] !== undefined;
+
+      document.getElementById('quiz-progress').textContent = `${currentQIdx + 1} / ${total}`;
+
+      const body   = document.getElementById('quiz-body');
+      const footer = document.getElementById('quiz-footer');
+      body.innerHTML = '';
+      footer.innerHTML = '';
+
+      // Image
+      if (q.imageUrl) {
+        const img = document.createElement('img');
+        img.className = 'question-img';
+        img.src = q.imageUrl;
+        body.appendChild(img);
+      }
+
+      // Texte
+      const qt = document.createElement('p');
+      qt.className = 'question-text';
+      qt.textContent = q.text;
+      body.appendChild(qt);
+
+      if (hasVoted || showingResults) {
+        // Affiche le diagramme
+        renderChart(q, body);
+        // Footer navigation
+        footer.innerHTML = currentQIdx < total - 1
+          ? `<button class="btn-primary" style="flex:1" onclick="nextQuestion()">Question suivante</button>`
+          : `<button class="btn-primary" style="flex:1" onclick="showList()">Terminer</button>`;
+      } else {
+        // Affiche les options
+        selectedAnswer = null;
+        q.answers.forEach((ans, i) => {
+          const opt = document.createElement('div');
+          opt.className = 'answer-option';
+          opt.innerHTML = `<div class="radio"></div><span>${ans}</span>`;
+          opt.addEventListener('click', () => {
+            document.querySelectorAll('.answer-option').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            selectedAnswer = i;
+          });
+          body.appendChild(opt);
+        });
+
+        footer.innerHTML = `<button class="btn-primary" style="flex:1" onclick="submitAnswer()">Valider</button>`;
+      }
+    }
+
+    // ═══════════════════════════════
+    // SOUMETTRE UNE RÉPONSE
+    // ═══════════════════════════════
+    window.submitAnswer = async function() {
+      if (selectedAnswer === null) return;
+
+      const pollRef = doc(db, 'polls', currentPoll.id);
+      const snap    = await getDoc(pollRef);
+      const data    = snap.data();
+      const questions = [...data.questions];
+      const q = { ...questions[currentQIdx] };
+
+      if (!q.votes) q.votes = {};
+      q.votes[currentUser.code] = selectedAnswer;
+
+      questions[currentQIdx] = q;
+      await updateDoc(pollRef, { questions });
+
+      // Met à jour local
+      currentPoll.questions[currentQIdx] = q;
+      showingResults = false;
+      renderQuestion();
+    };
+
+    // ═══════════════════════════════
+    // QUESTION SUIVANTE
+    // ═══════════════════════════════
+    window.nextQuestion = function() {
+      currentQIdx++;
+      showingResults = false;
+      selectedAnswer = null;
+      renderQuestion();
+    };
+
+    // ═══════════════════════════════
+    // DIAGRAMME CIRCULAIRE
+    // ═══════════════════════════════
+    const PIE_COLORS = ['#e05c5c','#5c8de0','#5cb85c','#d4c137','#a05ce0','#e08c3a','#3ab8b8','#e05ca8'];
+
+   function renderChart(q, container) {
+  const votes  = q.votes || {};
+  const counts = q.answers.map((_, i) => Object.values(votes).filter(v => v === i).length);
+  const total  = counts.reduce((a, b) => a + b, 0) || 1;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'chart-wrap';
+
+  const size = 180, cx = 90, cy = 90, r = 80;
+  let startAngle = -Math.PI / 2;
+  let paths = '';
+
+  counts.forEach((count, i) => {
+    const slice = (count / total) * 2 * Math.PI;
+    if (slice === 0) return;
+
+    if (slice >= 2 * Math.PI - 0.001) {
+      paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${PIE_COLORS[i % PIE_COLORS.length]}" opacity="0.85"/>`;
+      startAngle += slice;
+      return;
+    }
+
+    const endAngle = startAngle + slice;
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    const large = slice > Math.PI ? 1 : 0;
+    paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z" fill="${PIE_COLORS[i % PIE_COLORS.length]}" opacity="0.85"/>`;
+    startAngle = endAngle;
+  });
+
+  paths += `<circle cx="${cx}" cy="${cy}" r="30" fill="#0a0a0a"/>`;
+
+  wrap.innerHTML = `
+    <svg class="pie-svg" viewBox="0 0 ${size} ${size}">${paths}</svg>
+    <div class="chart-legend">
+      ${q.answers.map((ans, i) => {
+        const pct = Math.round((counts[i] / total) * 100);
+        const myVote = votes[currentUser.code] === i;
+        return `<div class="legend-row">
+          <div class="legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></div>
+          <span style="${myVote ? 'color:#fff' : 'color:var(--muted)'}">${ans}${myVote ? ' ✓' : ''}</span>
+          <span class="legend-pct">${pct}%</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+
+  container.appendChild(wrap);
+}
+
+    // ═══════════════════════════════
+    // CRÉATION DE QUESTIONNAIRE
+    // ═══════════════════════════════
+    function initCreate() {
+      document.getElementById('poll-title-input').value = '';
+      document.getElementById('questions-container').innerHTML = '';
+      questionBlocks = [];
+      addQuestionBlock();
+    }
+
+    window.addQuestionBlock = function() {
+      const idx = questionBlocks.length;
+      const id  = `qb-${Date.now()}`;
+      questionBlocks.push({ id, imageUrl: null });
+
+      const container = document.getElementById('questions-container');
+      const block = document.createElement('div');
+      block.className = 'question-block';
+      block.id = id;
+      block.innerHTML = `
+        <div class="question-num">Question ${idx + 1}</div>
+
+        <div>
+          <p class="section-label" style="margin-bottom:8px;">Image (optionnel)</p>
+          <label class="img-upload-label">
+            <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this, '${id}')"/>
+            <div style="width:60px;height:60px;border-radius:10px;background:var(--surface);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:22px;" id="img-placeholder-${id}">+</div>
+            <img class="img-preview" id="img-preview-${id}" />
+            <span id="img-label-${id}" style="font-size:11px;letter-spacing:1px;color:var(--muted);">Ajouter une image</span>
+          </label>
+        </div>
+
+        <div>
+          <p class="section-label">Question</p>
+          <input class="field-input" type="text" placeholder="Ta question…" id="q-text-${id}" />
+        </div>
+
+        <div>
+          <p class="section-label">Réponses</p>
+          <div id="answers-${id}">
+            <div class="answer-row"><input type="text" placeholder="Réponse 1" /><button class="remove-answer" onclick="removeAnswer(this)">×</button></div>
+            <div class="answer-row"><input type="text" placeholder="Réponse 2" /><button class="remove-answer" onclick="removeAnswer(this)">×</button></div>
+          </div>
+          <button class="add-answer-btn" onclick="addAnswer('${id}')">+ Ajouter une réponse</button>
+        </div>
+        <button class="remove-question-btn" style="color:var(--muted)" onclick="duplicateQuestion('${id}')">Dupliquer</button>
+        <button class="remove-question-btn" onclick="removeQuestion('${id}')">Supprimer cette question</button>
+      `;
+
+      container.appendChild(block);
+      renumberQuestions();
+    };
+
+    window.removeQuestion = function(id) {
+      questionBlocks = questionBlocks.filter(b => b.id !== id);
+      document.getElementById(id)?.remove();
+      renumberQuestions();
+    };
+
+    function renumberQuestions() {
+      document.querySelectorAll('.question-num').forEach((el, i) => {
+        el.textContent = `Question ${i + 1}`;
+      });
+    }
+
+    window.duplicateQuestion = function(sourceId) {
+  const sourceText = document.getElementById(`q-text-${sourceId}`)?.value || '';
+  const sourceAnswers = [...document.querySelectorAll(`#answers-${sourceId} input`)].map(i => i.value);
+
+  // Crée un nouveau bloc
+  addQuestionBlock();
+
+  // Récupère le dernier bloc créé
+  const newId = questionBlocks[questionBlocks.length - 1].id;
+
+  // Copie le texte
+  setTimeout(() => {
+    const newText = document.getElementById(`q-text-${newId}`);
+    if (newText) newText.value = sourceText;
+
+    // Copie les réponses
+    const answersContainer = document.getElementById(`answers-${newId}`);
+    if (!answersContainer) return;
+
+    // Vide les réponses par défaut
+    answersContainer.innerHTML = '';
+
+    sourceAnswers.forEach((ans, i) => {
+      const row = document.createElement('div');
+      row.className = 'answer-row';
+      row.innerHTML = `<input type="text" placeholder="Réponse ${i + 1}" value="${ans}" /><button class="remove-answer" onclick="removeAnswer(this)">×</button>`;
+      answersContainer.appendChild(row);
+    });
+  }, 50);
+};
+
+    window.addAnswer = function(qid) {
+      const container = document.getElementById(`answers-${qid}`);
+      const count = container.children.length + 1;
+      const row = document.createElement('div');
+      row.className = 'answer-row';
+      row.innerHTML = `<input type="text" placeholder="Réponse ${count}" /><button class="remove-answer" onclick="removeAnswer(this)">×</button>`;
+      container.appendChild(row);
+    };
+
+    window.removeAnswer = function(btn) {
+      const row = btn.parentElement;
+      if (row.parentElement.children.length > 2) row.remove();
+    };
+
+    // Upload image vers Cloudinary
+ window.handleImageUpload = async function(input, qid) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const label = document.getElementById(`img-label-${qid}`);
+  label.textContent = 'Upload…';
+
+  // Recadrage carré centré + compression 800x800
+  const compressed = await cropAndCompress(file, 800);
+
+  const formData = new FormData();
+  formData.append('file', compressed);
+  formData.append('upload_preset', UPLOAD_PRESET);
+
+      try {
+        const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method:'POST', body:formData });
+        const data = await res.json();
+        const url  = data.secure_url;
+
+        const block = questionBlocks.find(b => b.id === qid);
+        if (block) block.imageUrl = url;
+
+        const preview = document.getElementById(`img-preview-${qid}`);
+        const placeholder = document.getElementById(`img-placeholder-${qid}`);
+        preview.src = url;
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+        label.textContent = 'Image ajoutée ✓';
+      } catch(e) {
+        label.textContent = 'Erreur upload';
+      }
+    };
+
+    function cropAndCompress(file, size) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width  = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Recadrage carré centré
+      const min = Math.min(img.width, img.height);
+      const sx  = (img.width  - min) / 2;
+      const sy  = (img.height - min) / 2;
+
+      ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+
+      canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.85);
+    };
+    img.src = url;
+  });
+}
+
+    // Publier le questionnaire
+    window.submitPoll = async function() {
+      const title = document.getElementById('poll-title-input').value.trim();
+      if (!title) return alert('Ajoute un titre.');
+
+      const questions = [];
+      const blocks = document.querySelectorAll('.question-block');
+
+      for (const block of blocks) {
+        const id   = block.id;
+        const text = document.getElementById(`q-text-${id}`)?.value.trim();
+        if (!text) return alert('Remplis toutes les questions.');
+
+        const answerInputs = document.querySelectorAll(`#answers-${id} input`);
+        const answers = [...answerInputs].map(i => i.value.trim()).filter(Boolean);
+        if (answers.length < 2) return alert('Chaque question doit avoir au moins 2 réponses.');
+
+        const imgBlock = questionBlocks.find(b => b.id === id);
+        questions.push({
+          text,
+          answers,
+          imageUrl: imgBlock?.imageUrl || null,
+          votes: {}
+        });
+      }
+
+      if (questions.length === 0) return alert('Ajoute au moins une question.');
+
+      await addDoc(collection(db, 'polls'), {
+        title,
+        authorName:  currentUser.name,
+        authorColor: currentUser.color,
+        authorCode:  currentUser.code,
+        questions,
+        createdAt: serverTimestamp()
+      });
+
+      showList();
+    };
+
+    // ═══════════════════════════════
+    // REPRISE DE SESSION
+    // ═══════════════════════════════
+    const saved = sessionStorage.getItem('polls_user');
+    if (saved && (USERS[saved] || saved === ADMIN_CODE)) {
+      currentUser = saved === ADMIN_CODE
+        ? { code: ADMIN_CODE, name: "Admin", color: "#fff" }
+        : { code: saved, ...USERS[saved] };
+      showList();
+    }
+  </script>
+
+</body>
+</html>
