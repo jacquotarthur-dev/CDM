@@ -392,6 +392,8 @@
       display:flex;
       flex-direction:column;
       gap:20px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
     }
 
     .question-img {
@@ -743,6 +745,7 @@ card.querySelector('.reset-poll-btn')?.addEventListener('click', async (e) => {
       const body   = document.getElementById('quiz-body');
       const footer = document.getElementById('quiz-footer');
       body.innerHTML = '';
+      body.scrollIntoView({ behavior: 'smooth', block: 'start' });
       footer.innerHTML = '';
 
       // Image
@@ -806,18 +809,19 @@ card.querySelector('.reset-poll-btn')?.addEventListener('click', async (e) => {
       // Met à jour local
       currentPoll.questions[currentQIdx] = q;
       showingResults = false;
-      renderQuestion();
+      ();
     };
 
     // ═══════════════════════════════
     // QUESTION SUIVANTE
     // ═══════════════════════════════
-    window.nextQuestion = function() {
-      currentQIdx++;
-      showingResults = false;
-      selectedAnswer = null;
-      renderQuestion();
-    };
+window.nextQuestion = function() {
+  currentQIdx++;
+  showingResults = false;
+  selectedAnswer = null;
+  document.getElementById('quiz-body').scrollTo({ top: 0, behavior: 'smooth' });
+  renderQuestion();
+};
 
     // ═══════════════════════════════
     // DIAGRAMME CIRCULAIRE
