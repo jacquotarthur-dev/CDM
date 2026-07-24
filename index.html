@@ -1,37 +1,216 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="dark" />
-  
-  <title>CDM</title> 
-
+  <title>CDM</title>
+ 
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="Icon App.png">
-  
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
+ 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500&display=swap');
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    :root { color-scheme: dark; 
-          }
-
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600&display=swap');
+ 
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    :root { color-scheme: dark; }
+ 
     body {
-      background: #000000;
+      background: #000;
       min-height: 100dvh;
+      font-family: 'Barlow Condensed', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-family: 'Barlow Condensed', sans-serif;
       padding: 40px 24px;
     }
-
+ 
+    /* ══════════════════════════════
+       ÉCRAN DE CONNEXION
+    ══════════════════════════════ */
+    #screen-lock {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+ 
+    .lock-title {
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      color: #fff;
+    }
+ 
+    .lock-sub {
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: #333;
+      text-transform: uppercase;
+      margin-top: -12px;
+    }
+ 
+    .lock-input {
+      background: none;
+      border: none;
+      border-bottom: 1px solid #222;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      text-align: center;
+      letter-spacing: 8px;
+      padding: 10px 24px;
+      width: 180px;
+      outline: none;
+    }
+ 
+    .lock-btn {
+      background: none;
+      border: 1px solid #222;
+      border-radius: 20px;
+      color: #555;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 10px 28px;
+      cursor: pointer;
+      transition: color .2s, border-color .2s;
+    }
+ 
+    .lock-btn:active { color: #fff; border-color: #555; }
+ 
+    .lock-err {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #e05c5c;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+ 
+    /* ══════════════════════════════
+       HUB
+    ══════════════════════════════ */
+    #screen-hub {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+ 
+    /* Compteur */
+    .counter-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 48px;
+      position: relative;
+      z-index: 1;
+    }
+ 
+    .counter-label {
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #555;
+    }
+ 
+    .counter-display {
+      font-size: 30px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      color: #fff;
+    }
+ 
+    #add-time-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+ 
+    .time-btn {
+      background: none;
+      border: 1px solid #222;
+      border-radius: 20px;
+      color: #444;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 8px 20px;
+      cursor: pointer;
+    }
+ 
+    #time-editor {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+ 
+    .time-editor-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+ 
+    .time-editor-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+ 
+    .time-num-input {
+      width: 60px;
+      background: none;
+      border: none;
+      border-bottom: 1px solid #333;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 28px;
+      text-align: center;
+      outline: none;
+    }
+ 
+    .time-unit {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #444;
+    }
+ 
+    .time-sep { color: #333; font-size: 28px; }
+ 
+    .confirm-btn {
+      background: none;
+      border: 1px solid #333;
+      border-radius: 20px;
+      color: #888;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 8px 24px;
+      cursor: pointer;
+    }
+ 
+    .add-err {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #e05c5c;
+      opacity: 0;
+    }
+ 
+    /* Grille icônes */
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 100px);
@@ -39,28 +218,23 @@
       justify-content: center;
       z-index: 1;
     }
-
-    /* — Cellule commune — */
+ 
     .cell {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 8px;
       text-decoration: none;
+      cursor: pointer;
     }
-
-     /* — Wrapper icône (pour le liseret) — */
+ 
     .icon-wrap {
       position: relative;
       width: 100px;
       height: 100px;
       border-radius: 22px;
-      overflow: visible; /* le canvas SVG sort légèrement */
     }
-
-
-
-    /* Icône image */
+ 
     .icon-wrap img {
       width: 100%;
       height: 100%;
@@ -68,9 +242,8 @@
       display: block;
       object-fit: cover;
     }
-
-    /* Nom sous l'icône */
-    .cell .app-name {
+ 
+    .app-name {
       color: #fff;
       font-size: 13px;
       font-weight: 500;
@@ -79,233 +252,232 @@
       max-width: 100px;
       line-height: 1.1;
     }
-
-    /* — Cases WIP — */
+ 
     .cell.wip .icon-wrap {
-      background: #222;
+      background: #1a1a1a;
       border-radius: 22px;
     }
-
+ 
     .cell.wip .wip-label {
       position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Barlow Condensed', sans-serif;
       font-size: 13px;
       font-weight: 400;
       letter-spacing: 1px;
-      color: #3a3a3a;
+      color: #2a2a2a;
       text-transform: lowercase;
     }
-
-    .cell.wip .app-name { color: transparent; }
-
-
-  </style>
-  
  
-
-
-
-
-  
+    .cell.wip .app-name { color: transparent; }
+  </style>
 </head>
 <body>
-
-<!-- Compteur -->
-<div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:48px;position:relative;z-index:1;">
-  <p style="font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#555;">Paul nous doit :</p>
-  <p id="counter-display" style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:500;letter-spacing:3px;color:#fff;">00j : 00h : 00m : 00s</p>
-<div id="add-time-wrap" style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:4px;">
-  
-  <!-- Bouton pour ouvrir l'éditeur -->
-  <button id="counter-btn" onclick="toggleEditor()"
-    style="background:none;border:1px solid #222;border-radius:20px;color:#444;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:8px 20px;cursor:pointer;">
-    Encore...
-  </button>
-
-  <!-- Éditeur (caché par défaut) -->
-  <div id="time-editor" style="display:none;flex-direction:column;align-items:center;gap:10px;">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-        <input id="input-min" type="number" min="0" max="30" value="0"
-          style="width:60px;background:none;border:none;border-bottom:1px solid #333;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:28px;text-align:center;outline:none;" />
-        <span style="font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;color:#444;">MIN</span>
-      </div>
-      <span style="color:#333;font-size:28px;font-family:'Barlow Condensed',sans-serif;">:</span>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-        <input id="input-sec" type="number" min="0" max="59" value="0"
-          style="width:60px;background:none;border:none;border-bottom:1px solid #333;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:28px;text-align:center;outline:none;" />
-        <span style="font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;color:#444;">SEC</span>
+ 
+  <!-- ══ CONNEXION ══ -->
+  <div id="screen-lock">
+    <p class="lock-title">CDM</p>
+    <p class="lock-sub">Code d'accès</p>
+    <input class="lock-input" id="lock-input" type="password" maxlength="10" placeholder="····" />
+    <p class="lock-err" id="lock-err">Code incorrect</p>
+    <button class="lock-btn" onclick="tryLogin()">Entrer</button>
+  </div>
+ 
+  <!-- ══ HUB ══ -->
+  <div id="screen-hub">
+ 
+    <!-- Compteur -->
+    <div class="counter-wrap">
+      <p class="counter-label">Paul nous doit :</p>
+      <p class="counter-display" id="counter-display">00j : 00h : 00m : 00s</p>
+      <div id="add-time-wrap">
+        <button class="time-btn" id="counter-btn" onclick="toggleEditor()">Ajouter du temps</button>
+        <div id="time-editor" style="display:none;">
+          <div class="time-editor-row">
+            <div class="time-editor-col">
+              <input class="time-num-input" id="input-min" type="number" min="0" max="30" value="0" />
+              <span class="time-unit">MIN</span>
+            </div>
+            <span class="time-sep">:</span>
+            <div class="time-editor-col">
+              <input class="time-num-input" id="input-sec" type="number" min="0" max="59" value="0" />
+              <span class="time-unit">SEC</span>
+            </div>
+          </div>
+          <button class="confirm-btn" onclick="addTime()">Confirmer</button>
+          <p class="add-err" id="add-err">Max 30 minutes</p>
+        </div>
       </div>
     </div>
-    <button onclick="addTime()"
-      style="background:none;border:1px solid #333;border-radius:20px;color:#888;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:8px 24px;cursor:pointer;">
-      Confirmer
-    </button>
-    <p id="add-err" style="font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:2px;color:#e05c5c;opacity:0;">Max 30 minutes</p>
+ 
+    <!-- Grille -->
+    <div class="grid">
+ 
+      <!-- Projet 1 — direct -->
+      <a class="cell" href="./projet1/">
+        <div class="icon-wrap">
+          <img src="./Icon Booster.png" alt="Booster CDM" />
+        </div>
+        <span class="app-name">Booster CDM</span>
+      </a>
+ 
+      <!-- Projet 2 — direct -->
+      <a class="cell" href="./projet2/">
+        <div class="icon-wrap">
+          <img src="./Icon Bangers.webp" alt="Bangers" />
+        </div>
+        <span class="app-name">Bangers</span>
+      </a>
+ 
+      <!-- Projet 4 — direct -->
+      <a class="cell" href="./projet4/">
+        <div class="icon-wrap">
+          <img src="./Icon Onboakoa.webp" alt="Onboakoa" />
+        </div>
+        <span class="app-name">Onboakoa</span>
+      </a>
+ 
+      <!-- Projet 5 — direct -->
+      <a class="cell" href="./projet5/">
+        <div class="icon-wrap">
+          <img src="./Icon Idées.webp" alt="Idées du Malaise" />
+        </div>
+        <span class="app-name">Idées du Malaise</span>
+      </a>
+ 
+      <!-- Catégorie Jeux -->
+      <a class="cell" href="./jeux/">
+        <div class="icon-wrap">
+          <img src="./Icon Jeux.webp" alt="Jeux" />
+        </div>
+        <span class="app-name">Jeux</span>
+      </a>
+ 
+      <!-- WIP -->
+      <div class="cell wip">
+        <div class="icon-wrap">
+          <span class="wip-label">à suivre</span>
+        </div>
+        <span class="app-name">—</span>
+      </div>
+ 
+    </div>
   </div>
-
-</div>
-</div>
-  
-  
-  <div class="grid">
-
-    <!-- Projet 1 -->
-    <a class="cell p1" href="./projet1/">
-      <div class="icon-wrap">
-        <img src="./Icon Booster.png" alt="Booster" />
-        
-          <rect class="ring-track" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-          <rect class="ring-light" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-        </svg>
-      </div>
-      <span class="app-name">Booster CDM</span>
-    </a>
-
-    <!-- Projet 2 -->
-    <a class="cell p2" href="./projet2/">
-      <div class="icon-wrap">
-        <img src="./Icon Bangers.webp" alt="Bangers" />
-       
-          <rect class="ring-track" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-          <rect class="ring-light" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-        </svg>
-      </div>
-      <span class="app-name">Bangers</span>
-    </a>
-
-    <!-- Projet 3 -->
-    <a class="cell p3" href="./projet3/">
-      <div class="icon-wrap">
-        <img src="./Icon Dé.webp" alt="Dé" />
-       
-          <rect class="ring-track" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-          <rect class="ring-light" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-        </svg>
-      </div>
-      <span class="app-name">Le Dé</span>
-    </a>
-
-    <!-- Projet 4 -->
-    <a class="cell p4" href="./projet4/">
-      <div class="icon-wrap">
-        <img src="./Icon Onboakoa.webp" alt="Onboakoa" />
-       
-          <rect class="ring-track" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-          <rect class="ring-light" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-        </svg>
-      </div>
-      <span class="app-name">Onboakoa</span>
-    </a>
-
-   <!-- Projet 5 -->
-    <a class="cell p5" href="./projet5/">
-      <div class="icon-wrap">
-        <img src="./Icon Idées.webp" alt="Blog" />
-      
-          <rect class="ring-track" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-          <rect class="ring-light" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-        </svg>
-      </div>
-      <span class="app-name">Idées du Malaise</span>
-    </a>
-
-    <!-- Projet 5 -->
-    <a class="cell p6" href="./projet6/">
-      <div class="icon-wrap">
-        <img src="./Icon Polls.webp" alt="Blog" />
-      
-          <rect class="ring-track" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-          <rect class="ring-light" x="1" y="1" width="104" height="104" rx="24" ry="24"/>
-        </svg>
-      </div>
-      <span class="app-name">T'inquiète même pas</span>
-    </a>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, onSnapshot, runTransaction, setDoc }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCgP0hd88OZc_WWGsS0kAUBOumAXeos07I",
-    authDomain: "blog-cdm.firebaseapp.com",
-    projectId: "blog-cdm",
-    storageBucket: "blog-cdm.firebasestorage.app",
-    messagingSenderId: "727621219684",
-    appId: "1:727621219684:web:a4717bf808b7ea8fb8b671"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-  const counterRef = doc(db, 'hub', 'counter');
-
-  // ── Affichage ──
-  function displaySeconds(s) {
-    const j   = Math.floor(s / 86400);
-    const h   = Math.floor((s % 86400) / 3600);
-    const m   = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    document.getElementById('counter-display').textContent =
-      `${String(j).padStart(2,'0')}j : ${String(h).padStart(2,'0')}h : ${String(m).padStart(2,'0')}m : ${String(sec).padStart(2,'0')}s`;
-  }
-
-  // ── Écoute Firestore en temps réel ──
-  onSnapshot(counterRef, snap => {
-    if (snap.exists()) {
-      displaySeconds(snap.data().totalSeconds || 0);
-    } else {
-      setDoc(counterRef, { totalSeconds: 0 });
-      displaySeconds(0);
-    }
-  });
-
-  // ── Ouvre / ferme l'éditeur ──
-  window.toggleEditor = function() {
-    const editor = document.getElementById('time-editor');
-    const btn    = document.getElementById('counter-btn');
-    const open   = editor.style.display === 'none';
-    editor.style.display = open ? 'flex' : 'none';
-    btn.textContent = open ? 'Annuler' : 'Ajouter du temps';
-    btn.style.color = open ? '#888' : '#444';
-    document.getElementById('input-min').value = '0';
-    document.getElementById('input-sec').value = '0';
-    document.getElementById('add-err').style.opacity = '0';
-  };
-
-  // ── Ajouter du temps ──
-  window.addTime = async function() {
-    const min = parseInt(document.getElementById('input-min').value) || 0;
-    const sec = parseInt(document.getElementById('input-sec').value) || 0;
-    const toAdd = (min * 60) + sec;
-    const err = document.getElementById('add-err');
-
-    // Validation
-    if (toAdd <= 0) return;
-    if (toAdd > 1800) { // 30 mins max
-      err.style.opacity = '1';
-      return;
-    }
-
-    err.style.opacity = '0';
-
-    await runTransaction(db, async (transaction) => {
-      const snap = await transaction.get(counterRef);
-      const current = snap.exists() ? snap.data().totalSeconds || 0 : 0;
-      transaction.set(counterRef, { totalSeconds: current + toAdd });
+ 
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, runTransaction, setDoc }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+ 
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgP0hd88OZc_WWGsS0kAUBOumAXeos07I",
+      authDomain: "blog-cdm.firebaseapp.com",
+      projectId: "blog-cdm",
+      storageBucket: "blog-cdm.firebasestorage.app",
+      messagingSenderId: "727621219684",
+      appId: "1:727621219684:web:a4717bf808b7ea8fb8b671"
+    };
+ 
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const counterRef = doc(db, 'hub', 'counter');
+ 
+    // ── Utilisateurs (même liste que projets 5 et 6) ──
+    const USERS = {
+      "1919": { name: "Utilisateur 1", color: "#e05c5c" },
+      "2828": { name: "Utilisateur 2", color: "#e08c3a" },
+      "3737": { name: "Utilisateur 3", color: "#d4c137" },
+      "4646": { name: "Utilisateur 4", color: "#5cb85c" },
+      "9191": { name: "Utilisateur 5", color: "#3ab8b8" },
+      "8282": { name: "Utilisateur 6", color: "#5c8de0" },
+      "7373": { name: "Utilisateur 7", color: "#a05ce0" },
+      "6464": { name: "Utilisateur 8", color: "#e05ca8" },
+    };
+    const ADMIN_CODE = "4136";
+ 
+    // ── Connexion ──
+    window.tryLogin = function() {
+      const code = document.getElementById('lock-input').value.trim();
+      const err  = document.getElementById('lock-err');
+ 
+      if (USERS[code] || code === ADMIN_CODE) {
+        localStorage.setItem('cdm_user_code', code);
+        err.style.opacity = '0';
+        unlockHub();
+      } else {
+        err.style.opacity = '1';
+        document.getElementById('lock-input').value = '';
+      }
+    };
+ 
+    document.getElementById('lock-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') window.tryLogin();
     });
-
-    // Ferme l'éditeur après confirmation
-    toggleEditor();
-  };
-</script>
-  
+ 
+    function unlockHub() {
+      document.getElementById('screen-lock').style.display = 'none';
+    }
+ 
+    // ── Vérification session existante ──
+    const savedCode = localStorage.getItem('cdm_user_code');
+    if (savedCode && (USERS[savedCode] || savedCode === ADMIN_CODE)) {
+      unlockHub();
+    }
+ 
+    // ── Compteur ──
+    function displaySeconds(s) {
+      const j   = Math.floor(s / 86400);
+      const h   = Math.floor((s % 86400) / 3600);
+      const m   = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      document.getElementById('counter-display').textContent =
+        `${String(j).padStart(2,'0')}j : ${String(h).padStart(2,'0')}h : ${String(m).padStart(2,'0')}m : ${String(sec).padStart(2,'0')}s`;
+    }
+ 
+    onSnapshot(counterRef, snap => {
+      if (snap.exists()) {
+        displaySeconds(snap.data().totalSeconds || 0);
+      } else {
+        setDoc(counterRef, { totalSeconds: 0 });
+        displaySeconds(0);
+      }
+    });
+ 
+    window.toggleEditor = function() {
+      const editor = document.getElementById('time-editor');
+      const btn    = document.getElementById('counter-btn');
+      const open   = editor.style.display === 'none';
+      editor.style.display = open ? 'flex' : 'none';
+      btn.textContent = open ? 'Annuler' : 'Ajouter du temps';
+      btn.style.color = open ? '#888' : '#444';
+      document.getElementById('input-min').value = '0';
+      document.getElementById('input-sec').value = '0';
+      document.getElementById('add-err').style.opacity = '0';
+    };
+ 
+    window.addTime = async function() {
+      const min  = parseInt(document.getElementById('input-min').value) || 0;
+      const sec  = parseInt(document.getElementById('input-sec').value) || 0;
+      const toAdd = (min * 60) + sec;
+      const err  = document.getElementById('add-err');
+ 
+      if (toAdd <= 0) return;
+      if (toAdd > 1800) { err.style.opacity = '1'; return; }
+      err.style.opacity = '0';
+ 
+      await runTransaction(db, async (transaction) => {
+        const snap = await transaction.get(counterRef);
+        const current = snap.exists() ? snap.data().totalSeconds || 0 : 0;
+        transaction.set(counterRef, { totalSeconds: current + toAdd });
+      });
+ 
+      toggleEditor();
+    };
+  </script>
+ 
 </body>
 </html>
-
-</html>
-
+ 
