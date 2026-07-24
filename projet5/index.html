@@ -645,12 +645,13 @@
       return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // ── Reprise de session ──
-    const savedCode = sessionStorage.getItem('cdm5_user');
-    if (savedCode && USERS[savedCode]) {
-      currentUser = { code: savedCode, ...USERS[savedCode] };
-      showRubriques();
-    }
+ const savedCode = localStorage.getItem('cdm_user_code');
+if (savedCode && (USERS[savedCode] || savedCode === ADMIN_CODE)) {
+  currentUser = savedCode === ADMIN_CODE
+    ? { code: ADMIN_CODE, name: "Admin", color: "#fff" }
+    : { code: savedCode, ...USERS[savedCode] };
+  showRubriques();
+}
   </script>
 
 </body>
