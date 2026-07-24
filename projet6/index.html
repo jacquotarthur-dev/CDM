@@ -497,14 +497,6 @@
 </head>
 <body>
 
-  <!-- ══ CONNEXION ══ -->
-  <div id="s-login" class="screen active">
-    <p class="login-title">Polls</p>
-    <p class="login-sub">Code personnel</p>
-    <input class="login-input" id="login-input" type="password" maxlength="10" placeholder="····" />
-    <p class="err-msg" id="login-err">Code incorrect</p>
-    <button class="btn-primary" onclick="tryLogin()">Entrer</button>
-  </div>
 
   <!-- ══ LISTE ══ -->
   <div id="s-list" class="screen">
@@ -1091,13 +1083,15 @@ window.nextQuestion = function() {
     // ═══════════════════════════════
     // REPRISE DE SESSION
     // ═══════════════════════════════
-    const saved = localStorage.setItem('cdm_user_code', code);
-    if (saved && (USERS[saved] || saved === ADMIN_CODE)) {
-      currentUser = saved === ADMIN_CODE
-        ? { code: ADMIN_CODE, name: "Admin", color: "#fff" }
-        : { code: saved, ...USERS[saved] };
-      showList();
-    }
+ const saved = localStorage.getItem('cdm_user_code');
+if (saved && (USERS[saved] || saved === ADMIN_CODE)) {
+  currentUser = saved === ADMIN_CODE
+    ? { code: ADMIN_CODE, name: "Admin", color: "#fff" }
+    : { code: saved, ...USERS[saved] };
+  showList();
+} else {
+  window.location.href = '../';
+}
   </script>
 
 </body>
