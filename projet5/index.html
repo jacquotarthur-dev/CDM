@@ -505,7 +505,7 @@
 
       if (USERS[code]) {
         currentUser = { code, ...USERS[code] };
-        sessionStorage.setItem('cdm5_user', code);
+        localStorage.setItem('cdm_user_code', code);
         err.style.opacity = '0';
         showRubriques();
       } else {
