@@ -629,7 +629,7 @@
         currentUser = code === ADMIN_CODE
           ? { code: ADMIN_CODE, name: "Admin", color: "#fff" }
           : { code, ...USERS[code] };
-        sessionStorage.setItem('polls_user', code);
+        localStorage.getItem('cdm_user_code')
         err.style.opacity = '0';
         showList();
       } else {
@@ -1091,7 +1091,7 @@ window.nextQuestion = function() {
     // ═══════════════════════════════
     // REPRISE DE SESSION
     // ═══════════════════════════════
-    const saved = sessionStorage.getItem('polls_user');
+    const saved = localStorage.setItem('cdm_user_code', code);
     if (saved && (USERS[saved] || saved === ADMIN_CODE)) {
       currentUser = saved === ADMIN_CODE
         ? { code: ADMIN_CODE, name: "Admin", color: "#fff" }
