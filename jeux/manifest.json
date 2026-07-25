@@ -1,6 +1,6 @@
 {
-"name": "Bangers",
-"short_name": "Bangers",
+"name": "jeux",
+"short_name": "jeux",
 "start_url": "index.html",
 "display": "standalone",
 "background_color": "#000000",
