@@ -541,12 +541,12 @@
  
     <div class="choices-wrap" id="choices-wrap">
       <div class="choice choice-left" id="choice-left" onclick="vote(0)">
-        <div class="choice-img-placeholder" id="img-left-placeholder">?</div>
+        <div class="choice-img-placeholder" id="img-left-placeholder"></div>
         <img class="choice-img" id="img-left" src="" alt="" style="display:none" />
         <span class="choice-label" id="label-left"></span>
       </div>
       <div class="choice choice-right" id="choice-right" onclick="vote(1)">
-        <div class="choice-img-placeholder" id="img-right-placeholder">?</div>
+        <div class="choice-img-placeholder" id="img-right-placeholder"></div>
         <img class="choice-img" id="img-right" src="" alt="" style="display:none" />
         <span class="choice-label" id="label-right"></span>
       </div>
@@ -909,13 +909,14 @@
       const leftText  = document.getElementById('create-left-text').value.trim();
       const rightText = document.getElementById('create-right-text').value.trim();
  
-      if (!title || !leftText || !rightText) {
-        alert('Remplis le titre et les deux choix.');
-        return;
-      }
+   if (!leftText || !rightText) {
+  alert('Remplis les deux choix.');
+  return;
+}
+const finalTitle = title || 'Tu préfères... ?';
  
       await addDoc(collection(db, 'tuPreferes'), {
-        title,
+        title: finalTitle,
         leftText,
         rightText,
         leftImg:    uploadedLeft  || null,
