@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="color-scheme" content="dark" />
+  <title>Tu préfères ?</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500&display=swap');
+
+    :root {
+      --bg:       #0a0a0a;
+      --surface:  #181818;
+      --border:   #282828;
+      --text:     #f0f0f0;
+      --muted:    #666;
+      --red:      #c0605a;
+      --blue:     #5a7ec0;
+      --red-dim:  rgba(192,96,90,0.18);
+      --blue-dim: rgba(90,126,192,0.18);
+      --u1: #e05c5c; --u2: #e08c3a; --u3: #d4c137;
+      --u4: #5cb85c; --u5: #3ab8b8; --u6: #5c8de0;
+      --u7: #a05ce0; --u8: #e05ca8;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ══════════════════════════════
+       ÉCRANS
+    ══════════════════════════════ */
+    .screen {
+      display: none;
+      flex-direction: column;
+      height: 100dvh;
+      overflow: hidden;
+    }
+    .screen.active { display: flex; }
+
+    /* ══════════════════════════════
+       QUESTION
+    ══════════════════════════════ */
+    #s-question {
+      position: relative;
+    }
+
+    /* En-tête */
+    .q-header {
+      padding: 16px 20px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    .q-counter {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding-top: 4px;
+    }
+
+    .create-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    /* Titre question */
+    .q-title-wrap {
+      padding: 12px 24px 10px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    .q-author {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .q-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 26px;
+      font-weight: 600;
+      line-height: 1.15;
+      color: var(--text);
+      letter-spacing: .3px;
+    }
+
+    /* Zone bicolore */
+    .choices-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      min-height: 0;
+      margin: 10px 0 0;
+      position: relative;
+    }
+
+    .choice {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      cursor: pointer;
+      position: relative;
+      transition: filter .15s;
+      padding: 16px 14px;
+      user-select: none;
+    }
+
+    .choice:active { filter: brightness(1.12); }
+
+    .choice-left  { background: var(--red); }
+    .choice-right { background: var(--blue); }
+
+    /* Liseret central */
+    .choices-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      background: rgba(255,255,255,0.25);
+      z-index: 2;
+    }
+
+    .choice-img {
+      width: 80px; height: 80px;
+      border-radius: 14px;
+      object-fit: cover;
+      display: block;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    .choice-img-placeholder {
+      width: 80px; height: 80px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.2);
+      font-size: 28px;
+    }
+
+    .choice-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.92);
+      text-align: center;
+      line-height: 1.15;
+      letter-spacing: .3px;
+    }
+
+    /* Bouton retour bas */
+    .back-fixed {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0 16px;
+      flex-shrink: 0;
+      background: var(--bg);
+    }
+
+    .back-fixed a {
+      color: rgba(255,255,255,0.15);
+      display: flex;
+      text-decoration: none;
+    }
+
+    /* ══════════════════════════════
+       RÉSULTATS
+    ══════════════════════════════ */
+    #s-results {
+      align-items: stretch;
+    }
+
+    .res-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    .res-author {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .res-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .res-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 20px 24px;
+      overflow: hidden;
+    }
+
+    /* Barre de vote */
+    .bar-wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .bar-track {
+      width: 100%;
+      height: 40px;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      background: var(--surface);
+    }
+
+    .bar-left {
+      height: 100%;
+      background: var(--red);
+      transition: width .6s cubic-bezier(.4,0,.2,1);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .bar-right {
+      height: 100%;
+      background: var(--blue);
+      transition: width .6s cubic-bezier(.4,0,.2,1);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .bar-pct {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* Labels sous la barre */
+    .bar-labels {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .bar-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      max-width: 45%;
+    }
+
+    .bar-label.left { text-align: left; color: var(--red); }
+    .bar-label.right { text-align: right; color: var(--blue); }
+
+    /* Voters */
+    .voters-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .voters-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .voter-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: .5px;
+    }
+
+    .voter-name.red  { color: var(--red); text-align: left; }
+    .voter-name.blue { color: var(--blue); text-align: right; }
+
+    .voters-col.right { align-items: flex-end; }
+
+    /* Bouton suivant */
+    .res-footer {
+      padding: 12px 24px 28px;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      border-top: 1px solid var(--border);
+    }
+
+    .next-btn {
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 14px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 13px 48px;
+      cursor: pointer;
+    }
+
+    /* ══════════════════════════════
+       CRÉATION
+    ══════════════════════════════ */
+    #s-create {
+      overflow-y: auto;
+    }
+
+    .create-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky; top: 0;
+      background: var(--bg);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .back-icon {
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      display: flex; flex-shrink: 0;
+    }
+
+    .create-body {
+      padding: 24px 20px 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .field-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .field-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      font-size: 15px;
+      padding: 13px 16px;
+      outline: none;
+    }
+
+    .field-input::placeholder { color: #3a3a3a; }
+
+    /* Colonnes gauche/droite */
+    .choice-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .choice-col {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .choice-col-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .choice-col-label.red  { color: var(--red); }
+    .choice-col-label.blue { color: var(--blue); }
+
+    .col-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      font-size: 14px;
+      padding: 7px 2px;
+      outline: none;
+    }
+
+    .col-input::placeholder { color: #333; }
+
+    .img-upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .img-placeholder-box {
+      width: 56px; height: 56px;
+      border-radius: 10px;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      font-size: 20px;
+    }
+
+    .img-preview-small {
+      width: 56px; height: 56px;
+      border-radius: 10px;
+      object-fit: cover;
+      display: none;
+    }
+
+    .img-upload-txt {
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .sticky-footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 14px 20px 28px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-ghost {
+      flex: 1;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 13px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      flex: 2;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 14px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 13px;
+      cursor: pointer;
+    }
+
+    /* Animation réponse */
+    @keyframes flashIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    #s-results.active {
+      animation: flashIn .3s cubic-bezier(.2,0,0,1) both;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ QUESTION ══ -->
+  <div id="s-question" class="screen active">
+
+    <div class="q-header">
+      <span class="q-counter" id="q-counter"></span>
+      <div class="create-btn" onclick="showCreate()">+</div>
+    </div>
+
+    <div class="q-title-wrap">
+      <p class="q-author" id="q-author"></p>
+      <p class="q-title" id="q-title">Chargement…</p>
+    </div>
+
+    <div class="choices-wrap" id="choices-wrap">
+      <div class="choice choice-left" id="choice-left" onclick="vote(0)">
+        <div class="choice-img-placeholder" id="img-left-placeholder">?</div>
+        <img class="choice-img" id="img-left" src="" alt="" style="display:none" />
+        <span class="choice-label" id="label-left"></span>
+      </div>
+      <div class="choice choice-right" id="choice-right" onclick="vote(1)">
+        <div class="choice-img-placeholder" id="img-right-placeholder">?</div>
+        <img class="choice-img" id="img-right" src="" alt="" style="display:none" />
+        <span class="choice-label" id="label-right"></span>
+      </div>
+    </div>
+
+    <div class="back-fixed">
+      <a href="../jeux/">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ══ RÉSULTATS ══ -->
+  <div id="s-results" class="screen">
+
+    <div class="res-header">
+      <p class="res-author" id="res-author"></p>
+      <p class="res-title" id="res-title"></p>
+    </div>
+
+    <div class="res-body">
+
+      <div class="bar-wrap">
+        <div class="bar-track">
+          <div class="bar-left" id="bar-left" style="width:50%">
+            <span class="bar-pct" id="bar-pct-left">50%</span>
+          </div>
+          <div class="bar-right" id="bar-right" style="width:50%">
+            <span class="bar-pct" id="bar-pct-right">50%</span>
+          </div>
+        </div>
+        <div class="bar-labels">
+          <span class="bar-label left" id="bar-label-left"></span>
+          <span class="bar-label right" id="bar-label-right"></span>
+        </div>
+      </div>
+
+      <div class="voters-wrap">
+        <div class="voters-col left" id="voters-left"></div>
+        <div class="voters-col right" id="voters-right"></div>
+      </div>
+
+    </div>
+
+    <div class="res-footer">
+      <button class="next-btn" onclick="nextQuestion()">Suivant</button>
+    </div>
+
+  </div>
+
+  <!-- ══ CRÉATION ══ -->
+  <div id="s-create" class="screen">
+
+    <div class="create-header">
+      <button class="back-icon" onclick="showQuestion()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:600;letter-spacing:.5px;">Nouvelle question</span>
+    </div>
+
+    <div class="create-body">
+
+      <div>
+        <p class="field-label">Titre de la question</p>
+        <input class="field-input" id="create-title" type="text" placeholder="Tu préfères… ?" />
+      </div>
+
+      <div>
+        <p class="field-label">Les deux choix</p>
+        <div class="choice-cols">
+
+          <!-- Gauche = Rouge -->
+          <div class="choice-col">
+            <span class="choice-col-label red">Rouge</span>
+            <input class="col-input" id="create-left-text" type="text" placeholder="Choix gauche" />
+            <label class="img-upload-label">
+              <input type="file" accept="image/*" style="display:none" onchange="handleImg(this,'left')" />
+              <div class="img-placeholder-box" id="ph-left">+</div>
+              <img class="img-preview-small" id="prev-left" />
+              <span class="img-upload-txt" id="lbl-left">Image</span>
+            </label>
+          </div>
+
+          <!-- Droite = Bleu -->
+          <div class="choice-col">
+            <span class="choice-col-label blue">Bleu</span>
+            <input class="col-input" id="create-right-text" type="text" placeholder="Choix droit" />
+            <label class="img-upload-label">
+              <input type="file" accept="image/*" style="display:none" onchange="handleImg(this,'right')" />
+              <div class="img-placeholder-box" id="ph-right">+</div>
+              <img class="img-preview-small" id="prev-right" />
+              <span class="img-upload-txt" id="lbl-right">Image</span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sticky-footer">
+      <button class="btn-ghost" onclick="showQuestion()">Annuler</button>
+      <button class="btn-primary" onclick="submitQuestion()">Publier</button>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, onSnapshot, serverTimestamp, query, orderBy }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ── Firebase ──
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgP0hd88OZc_WWGsS0kAUBOumAXeos07I",
+      authDomain: "blog-cdm.firebaseapp.com",
+      projectId: "blog-cdm",
+      storageBucket: "blog-cdm.firebasestorage.app",
+      messagingSenderId: "727621219684",
+      appId: "1:727621219684:web:a4717bf808b7ea8fb8b671"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // ── Cloudinary ──
+    const CLOUD_NAME    = "myek8gus";
+    const UPLOAD_PRESET = "CDM Polls";
+
+    // ── Utilisateurs ──
+    const USERS = {
+      "1111": { name:"Utilisateur 1", color:"#e05c5c" },
+      "2222": { name:"Utilisateur 2", color:"#e08c3a" },
+      "3333": { name:"Utilisateur 3", color:"#d4c137" },
+      "4444": { name:"Utilisateur 4", color:"#5cb85c" },
+      "5555": { name:"Utilisateur 5", color:"#3ab8b8" },
+      "6666": { name:"Utilisateur 6", color:"#5c8de0" },
+      "7777": { name:"Utilisateur 7", color:"#a05ce0" },
+      "8888": { name:"Utilisateur 8", color:"#e05ca8" },
+    };
+    const ADMIN_CODE = "0000";
+
+    // ── État ──
+    let currentUser = null;
+    let questions   = [];
+    let order       = [];
+    let qIndex      = 0;
+    let uploadedLeft  = null;
+    let uploadedRight = null;
+
+    // ── Init utilisateur ──
+    const savedCode = localStorage.getItem('cdm_user_code');
+    if (savedCode && (USERS[savedCode] || savedCode === ADMIN_CODE)) {
+      currentUser = savedCode === ADMIN_CODE
+        ? { code: ADMIN_CODE, name: "Admin", color: "#fff" }
+        : { code: savedCode, ...USERS[savedCode] };
+    } else {
+      window.location.href = '../';
+    }
+
+    // ── Navigation ──
+    function show(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    window.showQuestion = () => show('s-question');
+    window.showCreate   = () => {
+      resetCreate();
+      show('s-create');
+    };
+
+    // ── Chargement des questions ──
+    async function loadQuestions() {
+      const snap = await getDocs(query(collection(db, 'tuPreferes'), orderBy('createdAt', 'asc')));
+      questions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      if (questions.length === 0) {
+        document.getElementById('q-title').textContent = 'Aucune question pour l\'instant !';
+        document.getElementById('q-author').textContent = '';
+        document.getElementById('q-counter').textContent = '';
+        document.getElementById('label-left').textContent = '';
+        document.getElementById('label-right').textContent = '';
+        return;
+      }
+
+      // Ordre aléatoire
+      order = shuffle([...Array(questions.length).keys()]);
+      qIndex = 0;
+      renderQuestion();
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // ── Rendu question ──
+    function renderQuestion() {
+      const q = questions[order[qIndex]];
+
+      document.getElementById('q-counter').textContent = `${qIndex + 1} / ${questions.length}`;
+      document.getElementById('q-author').textContent  = `par ${q.authorName}`;
+      document.getElementById('q-title').textContent   = q.title;
+      document.getElementById('label-left').textContent  = q.leftText;
+      document.getElementById('label-right').textContent = q.rightText;
+
+      // Images gauche
+      const imgL = document.getElementById('img-left');
+      const phL  = document.getElementById('img-left-placeholder');
+      if (q.leftImg) {
+        imgL.src = q.leftImg; imgL.style.display = 'block'; phL.style.display = 'none';
+      } else {
+        imgL.style.display = 'none'; phL.style.display = 'flex';
+      }
+
+      // Images droite
+      const imgR = document.getElementById('img-right');
+      const phR  = document.getElementById('img-right-placeholder');
+      if (q.rightImg) {
+        imgR.src = q.rightImg; imgR.style.display = 'block'; phR.style.display = 'none';
+      } else {
+        imgR.style.display = 'none'; phR.style.display = 'flex';
+      }
+
+      show('s-question');
+    }
+
+    // ── Voter ──
+    window.vote = async function(side) {
+      const q = questions[order[qIndex]];
+      const qRef = doc(db, 'tuPreferes', q.id);
+
+      // Met à jour le vote (remplace si déjà voté)
+      const votes = { ...(q.votes || {}) };
+      votes[currentUser.code] = side;
+      await updateDoc(qRef, { votes });
+
+      // Maj local
+      questions[order[qIndex]].votes = votes;
+
+      renderResults(questions[order[qIndex]]);
+    };
+
+    // ── Résultats ──
+    function renderResults(q) {
+      const votes  = q.votes || {};
+      const leftVoters  = Object.entries(votes).filter(([,v]) => v === 0).map(([k]) => k);
+      const rightVoters = Object.entries(votes).filter(([,v]) => v === 1).map(([k]) => k);
+      const total  = leftVoters.length + rightVoters.length || 1;
+      const leftPct  = Math.round((leftVoters.length / total) * 100);
+      const rightPct = 100 - leftPct;
+
+      document.getElementById('res-author').textContent = `par ${q.authorName}`;
+      document.getElementById('res-title').textContent  = q.title;
+      document.getElementById('bar-label-left').textContent  = q.leftText;
+      document.getElementById('bar-label-right').textContent = q.rightText;
+      document.getElementById('bar-pct-left').textContent  = leftPct + '%';
+      document.getElementById('bar-pct-right').textContent = rightPct + '%';
+
+      // Animation barre
+      setTimeout(() => {
+        document.getElementById('bar-left').style.width  = leftPct + '%';
+        document.getElementById('bar-right').style.width = rightPct + '%';
+      }, 80);
+
+      // Voters gauche
+      const vl = document.getElementById('voters-left');
+      vl.innerHTML = leftVoters.map(code => {
+        const u = USERS[code] || { name: code, color: '#fff' };
+        return `<span class="voter-name red" style="color:${u.color}">${u.name}</span>`;
+      }).join('');
+
+      // Voters droite
+      const vr = document.getElementById('voters-right');
+      vr.innerHTML = rightVoters.map(code => {
+        const u = USERS[code] || { name: code, color: '#fff' };
+        return `<span class="voter-name blue" style="color:${u.color}">${u.name}</span>`;
+      }).join('');
+
+      show('s-results');
+    }
+
+    // ── Question suivante ──
+    window.nextQuestion = function() {
+      qIndex = (qIndex + 1) % questions.length;
+      if (qIndex === 0) order = shuffle([...Array(questions.length).keys()]);
+      renderQuestion();
+    };
+
+    // ── Création ──
+    function resetCreate() {
+      document.getElementById('create-title').value = '';
+      document.getElementById('create-left-text').value = '';
+      document.getElementById('create-right-text').value = '';
+      uploadedLeft = null; uploadedRight = null;
+      ['left','right'].forEach(side => {
+        document.getElementById(`ph-${side}`).style.display = 'flex';
+        document.getElementById(`prev-${side}`).style.display = 'none';
+        document.getElementById(`lbl-${side}`).textContent = 'Image';
+      });
+    }
+
+    window.handleImg = async function(input, side) {
+      const file = input.files[0];
+      if (!file) return;
+      document.getElementById(`lbl-${side}`).textContent = 'Upload…';
+
+      const compressed = await cropAndCompress(file, 800);
+      const formData = new FormData();
+      formData.append('file', compressed);
+      formData.append('upload_preset', UPLOAD_PRESET);
+
+      try {
+        const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method:'POST', body:formData });
+        const data = await res.json();
+        const url  = data.secure_url;
+
+        if (side === 'left')  uploadedLeft  = url;
+        else                  uploadedRight = url;
+
+        document.getElementById(`ph-${side}`).style.display = 'none';
+        const prev = document.getElementById(`prev-${side}`);
+        prev.src = url; prev.style.display = 'block';
+        document.getElementById(`lbl-${side}`).textContent = '✓';
+      } catch(e) {
+        document.getElementById(`lbl-${side}`).textContent = 'Erreur';
+      }
+    };
+
+    function cropAndCompress(file, size) {
+      return new Promise(resolve => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          const min = Math.min(img.width, img.height);
+          const sx  = (img.width  - min) / 2;
+          const sy  = (img.height - min) / 2;
+          ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+          URL.revokeObjectURL(url);
+          canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.85);
+        };
+        img.src = url;
+      });
+    }
+
+    window.submitQuestion = async function() {
+      const title     = document.getElementById('create-title').value.trim();
+      const leftText  = document.getElementById('create-left-text').value.trim();
+      const rightText = document.getElementById('create-right-text').value.trim();
+
+      if (!title || !leftText || !rightText) {
+        alert('Remplis le titre et les deux choix.');
+        return;
+      }
+
+      await addDoc(collection(db, 'tuPreferes'), {
+        title,
+        leftText,
+        rightText,
+        leftImg:    uploadedLeft  || null,
+        rightImg:   uploadedRight || null,
+        authorName:  currentUser.name,
+        authorColor: currentUser.color,
+        authorCode:  currentUser.code,
+        votes:       {},
+        createdAt:   serverTimestamp()
+      });
+
+      await loadQuestions();
+      showQuestion();
+    };
+
+    // ── Lancement ──
+    loadQuestions();
+  </script>
+
+</body>
+</html>
