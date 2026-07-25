@@ -111,14 +111,18 @@
     }
  
     /* Zone bicolore */
-    .choices-wrap {
-      flex: 1;
-      display: flex;
-      flex-direction: row;
-      min-height: 0;
-      margin: 10px 0 0;
-      position: relative;
-    }
+.choices-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+  margin: 10px auto 0;
+  position: relative;
+  width: 85%;
+  border-radius: 20px;
+  overflow: hidden;
+  max-height: 55dvh;
+}
  
     .choice {
       flex: 1;
@@ -174,15 +178,15 @@
     }
  
     /* Bouton retour bas */
-    .back-fixed {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      justify-content: center;
-      padding: 10px 0 16px;
-      flex-shrink: 0;
-      background: var(--bg);
-    }
+.back-fixed {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  padding: 18px 0 28px;
+  flex-shrink: 0;
+  background: var(--bg);
+}
  
     .back-fixed a {
       color: rgba(255,255,255,0.15);
