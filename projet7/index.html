@@ -707,7 +707,7 @@
     const savedCode = localStorage.getItem('cdm_user_code');
     if (savedCode && (USERS[savedCode] || savedCode === ADMIN_CODE)) {
       currentUser = savedCode === ADMIN_CODE
-        ? { code: ADMIN_CODE, name: "Admin", color: "#fff" }
+        ? { code: ADMIN_CODE, name: "Omniscience", color: "#e05ca8" }
         : { code: savedCode, ...USERS[savedCode] };
     } else {
       window.location.href = '../';
