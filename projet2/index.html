@@ -317,6 +317,14 @@
 .lyrics-btn:active { color: #fff; }
 .lyrics-btn.visible { display: block; }
 
+
+.lyric-line {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #ccc;
+  margin-bottom: 2px;
+}
     
   </style>
 </head>
@@ -487,8 +495,14 @@ async function loadLyrics(trackFile) {
   try {
     const res = await fetch(`./${trackFile}.txt`);
     if (!res.ok) return; // pas de fichier = bouton caché
-    const text = await res.text();
-    document.getElementById('lyrics-text').textContent = text;
+   const text = await res.text();
+const lines = text.split('\n');
+const html = lines.map(line =>
+  line.trim() === ''
+    ? '<div style="height:1.4em"></div>'
+    : `<div class="lyric-line">${line}</div>`
+).join('');
+document.getElementById('lyrics-text').innerHTML = html;
     btn.classList.add('visible');
   } catch(e) {
     // pas de paroles, bouton reste caché
