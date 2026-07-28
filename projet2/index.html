@@ -251,6 +251,73 @@
     .ctrl-btn.play:active { background: #ddd; }
 
     .ctrl-btn svg { display: block; }
+
+
+/* ── Paroles ── */
+.player-visual-wrap {
+  position: relative;
+  width: 72vw;
+  max-width: 300px;
+  margin: 24px auto 0;
+  overflow: hidden;
+}
+
+.player-cover-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s;
+  flex-shrink: 0;
+}
+
+.lyrics-wrap {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  padding: 4px 0;
+}
+
+.lyrics-wrap.visible {
+  transform: translateX(0);
+}
+
+.player-cover-wrap.hidden {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lyrics-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: #ccc;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.lyrics-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 16px auto 0;
+  padding: 6px;
+  color: #555;
+  transition: color 0.2s;
+}
+
+.lyrics-btn:active { color: #fff; }
+.lyrics-btn.visible { display: block; }
+
+    
   </style>
 </head>
 <body>
@@ -276,9 +343,20 @@
       Retour
     </button>
 
-    <div class="player-cover-wrap">
-      <img id="player-img" src="" alt="" />
-    </div>
+    <div class="player-visual-wrap">
+  <div class="player-cover-wrap" id="player-cover">
+    <img id="player-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;" />
+  </div>
+  <div class="lyrics-wrap" id="lyrics-wrap">
+    <p class="lyrics-text" id="lyrics-text"></p>
+  </div>
+</div>
+
+<button class="lyrics-btn" id="lyrics-btn" onclick="toggleLyrics()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 6h16M4 10h16M4 14h10"/>
+  </svg>
+</button>
 
     <div class="player-info">
       <div class="player-title" id="player-title"></div>
@@ -315,6 +393,7 @@
   <audio id="audio"></audio>
 
   <script>
+    let lyricsVisible = false;
     // =============================================
     // CATALOGUE — ajoute tes singles ici
     // { title, artist, file } — les fichiers .png et .mp3
@@ -389,6 +468,7 @@
       document.getElementById('player-artist').textContent = t.artist;
       audio.src = `./${t.file}.mp3`;
       audio.load();
+      loadLyrics(t.file);
       progressBar.value = 0;
       updateProgress(0);
       document.getElementById('time-current').textContent = '0:00';
@@ -396,6 +476,33 @@
       updatePlayIcon(false);
     }
 
+async function loadLyrics(trackFile) {
+  const btn = document.getElementById('lyrics-btn');
+  lyricsVisible = false;
+  document.getElementById('lyrics-wrap').classList.remove('visible');
+  document.getElementById('player-cover').classList.remove('hidden');
+  document.getElementById('lyrics-text').textContent = '';
+  btn.classList.remove('visible');
+
+  try {
+    const res = await fetch(`./${trackFile}.txt`);
+    if (!res.ok) return; // pas de fichier = bouton caché
+    const text = await res.text();
+    document.getElementById('lyrics-text').textContent = text;
+    btn.classList.add('visible');
+  } catch(e) {
+    // pas de paroles, bouton reste caché
+  }
+}
+
+window.toggleLyrics = function() {
+  lyricsVisible = !lyricsVisible;
+  document.getElementById('lyrics-wrap').classList.toggle('visible', lyricsVisible);
+  document.getElementById('player-cover').classList.toggle('hidden', lyricsVisible);
+  document.getElementById('lyrics-wrap').scrollTop = 0;
+};
+
+    
     function togglePlay() {
       if (audio.paused) {
         audio.play();
