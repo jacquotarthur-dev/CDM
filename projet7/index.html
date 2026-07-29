@@ -527,13 +527,14 @@
   <!-- ══ QUESTION ══ -->
   <div id="s-question" class="screen active">
  
-    <div class="q-header">
-      <span class="q-counter" id="q-counter"></span>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button id="delete-btn" style="display:none;background:none;border:none;color:rgba(224,92,92,0.3);font-size:20px;cursor:pointer;line-height:1;padding:4px;" onclick="deleteCurrentQuestion()">×</button>
-        <div class="create-btn" onclick="showCreate()">+</div>
-      </div>
-    </div>
+   <div class="q-header">
+  <span class="q-counter" id="q-counter"></span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button id="delete-btn" style="display:none;background:none;border:none;color:rgba(224,92,92,0.3);font-size:20px;cursor:pointer;line-height:1;padding:4px;" onclick="deleteCurrentQuestion()">×</button>
+    <button id="edit-btn" style="display:none;background:none;border:none;color:var(--muted);font-size:12px;letter-spacing:2px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;cursor:pointer;padding:4px 8px;border:1px solid var(--border);border-radius:10px;" onclick="editCurrentQuestion()">Éditer</button>
+    <div class="create-btn" onclick="showCreate()">+</div>
+  </div>
+</div>
  
     <div class="q-title-wrap">
       <p class="q-author" id="q-author"></p>
@@ -740,8 +741,17 @@
       }
  
       // Ordre aléatoire
-      order = shuffle([...Array(questions.length).keys()]);
-      qIndex = 0;
+      const unanswered = [];
+const answered   = [];
+questions.forEach((q, i) => {
+  if (q.votes && q.votes[currentUser.code] !== undefined) {
+    answered.push(i);
+  } else {
+    unanswered.push(i);
+  }
+});
+order = [...shuffle(unanswered), ...shuffle(answered)];
+qIndex = 0;
       renderQuestion();
     }
  
@@ -848,6 +858,7 @@
  
     // ── Création ──
     function resetCreate() {
+      window._editingId = null;
       document.getElementById('create-title').value = '';
       document.getElementById('create-left-text').value = '';
       document.getElementById('create-right-text').value = '';
@@ -905,38 +916,59 @@
       });
     }
  
-    window.submitQuestion = async function() {
-      const title     = document.getElementById('create-title').value.trim();
-      const leftText  = document.getElementById('create-left-text').value.trim();
-      const rightText = document.getElementById('create-right-text').value.trim();
- 
-   if (!leftText || !rightText) {
-  alert('Remplis les deux choix.');
-  return;
-}
-const finalTitle = title || 'Tu préfères... ?';
- 
-      await addDoc(collection(db, 'tuPreferes'), {
-        title: finalTitle,
-        leftText,
-        rightText,
-        leftImg:    uploadedLeft  || null,
-        rightImg:   uploadedRight || null,
-        authorName:  currentUser.name,
-        authorColor: currentUser.color,
-        authorCode:  currentUser.code,
-        votes:       {},
-        createdAt:   serverTimestamp()
-      });
- 
-      await loadQuestions();
-      showQuestion();
-    };
+window.submitQuestion = async function() {
+  const title     = document.getElementById('create-title').value.trim();
+  const leftText  = document.getElementById('create-left-text').value.trim();
+  const rightText = document.getElementById('create-right-text').value.trim();
+
+  if (!leftText || !rightText) {
+    alert('Remplis les deux choix.');
+    return;
+  }
+  const finalTitle = title || 'Tu préfères... ?';
+
+  if (window._editingId) {
+    // Mode édition — on conserve les votes existants
+    await updateDoc(doc(db, 'tuPreferes', window._editingId), {
+      title: finalTitle,
+      leftText, rightText,
+      leftImg:  uploadedLeft  || null,
+      rightImg: uploadedRight || null,
+    });
+    window._editingId = null;
+  } else {
+    // Nouvelle question
+    await addDoc(collection(db, 'tuPreferes'), {
+      title: finalTitle,
+      leftText, rightText,
+      leftImg:    uploadedLeft  || null,
+      rightImg:   uploadedRight || null,
+      authorName:  currentUser.name,
+      authorColor: currentUser.color,
+      authorCode:  currentUser.code,
+      votes:       {},
+      createdAt:   serverTimestamp()
+    });
+  }
+
+  await loadQuestions();
+  showQuestion();
+};
  
     // ── Affichage bouton suppression admin ──
     if (currentUser.code === ADMIN_CODE) {
       document.getElementById('delete-btn').style.display = 'block';
     }
+
+    js
+// Bouton éditer visible si créateur ou admin
+const editBtn = document.getElementById('edit-btn');
+const q = questions[order[qIndex]];
+if (currentUser.code === q.authorCode || currentUser.code === ADMIN_CODE) {
+  editBtn.style.display = 'block';
+} else {
+  editBtn.style.display = 'none';
+}
  
     // ── Supprimer question (admin) ──
     window.deleteCurrentQuestion = async function() {
@@ -945,9 +977,43 @@ const finalTitle = title || 'Tu préfères... ?';
       await deleteDoc(doc(db, 'tuPreferes', q.id));
       await loadQuestions();
     };
+
+
+
+window.editCurrentQuestion = function() {
+  const q = questions[order[qIndex]];
+  // Pré-remplir le formulaire de création
+  document.getElementById('create-title').value      = q.title;
+  document.getElementById('create-left-text').value  = q.leftText;
+  document.getElementById('create-right-text').value = q.rightText;
+  // Images existantes
+  if (q.leftImg) {
+    uploadedLeft = q.leftImg;
+    document.getElementById('ph-left').style.display   = 'none';
+    document.getElementById('prev-left').src           = q.leftImg;
+    document.getElementById('prev-left').style.display = 'block';
+    document.getElementById('lbl-left').textContent    = '✓';
+  }
+  if (q.rightImg) {
+    uploadedRight = q.rightImg;
+    document.getElementById('ph-right').style.display   = 'none';
+    document.getElementById('prev-right').src           = q.rightImg;
+    document.getElementById('prev-right').style.display = 'block';
+    document.getElementById('lbl-right').textContent    = '✓';
+  }
+  // Stocker l'id de la question en cours d'édition
+  window._editingId = q.id;
+  show('s-create');
+};
+    
  
     // ── Lancement ──
     loadQuestions();
+
+
+
+
+    
   </script>
  
 </body>
