@@ -963,7 +963,7 @@ window.submitQuestion = async function() {
     
 // Bouton éditer visible si créateur ou admin
 const editBtn = document.getElementById('edit-btn');
-const q = questions[order[qIndex]];
+
 if (currentUser.code === q.authorCode || currentUser.code === ADMIN_CODE) {
   editBtn.style.display = 'block';
 } else {
