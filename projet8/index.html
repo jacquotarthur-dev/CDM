@@ -1,1 +1,1107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="color-scheme" content="dark" />
+  <title>Undercover</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500&display=swap');
 
+    :root {
+      --bg:      #0a0a0a;
+      --surface: #141414;
+      --border:  #222;
+      --text:    #efefef;
+      --muted:   #555;
+      --green:   #4a8c5c;
+      --red:     #8c4a4a;
+      --gold:    #c9a040;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ══ ÉCRANS ══ */
+    .screen { display:none; flex-direction:column; min-height:100dvh; }
+    .screen.active { display:flex; }
+
+    /* ══ COMPOSANTS COMMUNS ══ */
+    .page-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky; top:0;
+      background: var(--bg);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .page-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      flex: 1;
+    }
+
+    .back-icon {
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      display: flex; flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    .page-body {
+      flex: 1;
+      padding: 24px 20px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .centered {
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .section-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .field-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      font-size: 15px;
+      padding: 13px 16px;
+      outline: none;
+    }
+
+    .field-input::placeholder { color: #2a2a2a; }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 14px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 15px;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+
+    .btn-primary:active { opacity: .8; }
+    .btn-primary:disabled { opacity: .3; cursor: default; }
+
+    .btn-ghost {
+      width: 100%;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 13px;
+      cursor: pointer;
+    }
+
+    .btn-danger {
+      width: 100%;
+      background: none;
+      border: 1px solid var(--red);
+      border-radius: 14px;
+      color: #c06060;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 13px;
+      cursor: pointer;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    /* ══ LOBBY ══ */
+    .player-count-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .count-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 22px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+
+    .count-display {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--text);
+      min-width: 60px;
+      text-align: center;
+    }
+
+    /* ══ MOTS ══ */
+    .word-box {
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .word-box.ally  { background: rgba(74,140,92,0.15); border: 1px solid rgba(74,140,92,0.3); }
+    .word-box.enemy { background: rgba(140,74,74,0.15); border: 1px solid rgba(140,74,74,0.3); }
+
+    .word-box-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .word-box.ally  .word-box-label { color: #6ab87a; }
+    .word-box.enemy .word-box-label { color: #b87a6a; }
+
+    .word-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 28px;
+      font-weight: 600;
+      padding: 8px 0;
+      outline: none;
+      width: 100%;
+      letter-spacing: 1px;
+    }
+
+    .word-input::placeholder { color: #2a2a2a; }
+
+    /* ══ RÔLES ══ */
+    .role-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .role-row:last-child { border-bottom: none; }
+
+    .role-player-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .role-selector {
+      display: flex;
+      gap: 6px;
+    }
+
+    .role-chip {
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .role-chip.active-ally   { background: rgba(74,140,92,0.2);  border-color: #4a8c5c; color: #6ab87a; }
+    .role-chip.active-enemy  { background: rgba(140,74,74,0.2);  border-color: #8c4a4a; color: #b87a6a; }
+    .role-chip.active-white  { background: rgba(201,160,64,0.2); border-color: #c9a040; color: #d4b060; }
+
+    .roles-summary {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .roles-summary .ok   { color: #6ab87a; }
+    .roles-summary .warn { color: #b87a6a; }
+
+    /* ══ MOT JOUEUR ══ */
+    .big-word {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 52px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text);
+      text-align: center;
+      line-height: 1;
+    }
+
+    .big-role {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .big-role.ally  { color: #6ab87a; }
+    .big-role.enemy { color: #b87a6a; }
+    .big-role.white { color: #d4b060; }
+
+    /* ══ VOTE ══ */
+    .vote-player {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+
+    .vote-player:active { border-color: #444; }
+
+    .vote-player-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    /* ══ ÉLIMINATION ══ */
+    .elim-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: center;
+    }
+
+    .elim-role {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .countdown-ring {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--muted);
+      margin: 0 auto;
+    }
+
+    /* ══ FIN ══ */
+    .winner-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .win-text {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 64px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .win-text.won  { color: #6ab87a; }
+    .win-text.lost { color: #b87a6a; }
+
+    /* ══ RETOUR BAS ══ */
+    .back-fixed {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,.12);
+      display: flex;
+      text-decoration: none;
+      z-index: 50;
+    }
+
+    /* ══ CHARGEMENT ══ */
+    .loading-dot {
+      display: inline-block;
+      animation: pulse 1.4s ease-in-out infinite;
+      font-size: 32px;
+      color: var(--muted);
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: .2; } 50% { opacity: 1; }
+    }
+
+    .waiting-text {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .player-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .player-chip-item {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: var(--muted);
+    }
+
+    .player-chip-item.joined { color: var(--text); border-color: #333; }
+  </style>
+</head>
+<body>
+
+  <!-- ══ ACCUEIL ══ -->
+  <div id="s-home" class="screen active">
+    <div class="page-header">
+      <a class="back-icon" href="../jeux/">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </a>
+      <span class="page-title">Undercover</span>
+    </div>
+    <div class="page-body centered" style="gap:24px;">
+      <div id="home-status"></div>
+      <button class="btn-primary" style="max-width:280px" onclick="createRoom()">Créer une partie</button>
+      <button class="btn-ghost" style="max-width:280px" id="join-btn" onclick="joinRoom()">Rejoindre la partie</button>
+    </div>
+  </div>
+
+  <!-- ══ CRÉATION — NB JOUEURS ══ -->
+  <div id="s-setup-count" class="screen">
+    <div class="page-header">
+      <button class="back-icon" onclick="cancelCreate()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span class="page-title">Nouvelle partie</span>
+    </div>
+    <div class="page-body centered" style="gap:32px;">
+      <p class="section-label">Nombre de joueurs</p>
+      <div class="player-count-wrap">
+        <div class="count-btn" onclick="changeCount(-1)">−</div>
+        <span class="count-display" id="count-display">4</span>
+        <div class="count-btn" onclick="changeCount(1)">+</div>
+      </div>
+      <button class="btn-primary" style="max-width:280px" onclick="goToWords()">Continuer</button>
+    </div>
+  </div>
+
+  <!-- ══ CRÉATION — MOTS ══ -->
+  <div id="s-setup-words" class="screen">
+    <div class="page-header">
+      <button class="back-icon" onclick="show('s-setup-count')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span class="page-title">Les mots</span>
+    </div>
+    <div class="page-body" style="gap:20px;">
+      <div class="word-box ally">
+        <span class="word-box-label">Mot Allié</span>
+        <input class="word-input" id="word-ally" type="text" placeholder="Entrez le mot allié…" autocomplete="off" />
+      </div>
+      <div class="word-box enemy">
+        <span class="word-box-label">Mot Imposteur</span>
+        <input class="word-input" id="word-enemy" type="text" placeholder="Entrez le mot imposteur…" autocomplete="off" />
+      </div>
+      <div style="margin-top:8px;">
+        <button class="btn-primary" id="words-next-btn" onclick="goToRoles()" disabled>Continuer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CRÉATION — RÔLES ══ -->
+  <div id="s-setup-roles" class="screen">
+    <div class="page-header">
+      <button class="back-icon" onclick="show('s-setup-words')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span class="page-title">Rôles</span>
+    </div>
+    <div class="page-body" style="gap:12px;">
+      <p class="roles-summary" id="roles-summary"></p>
+      <div class="card" id="roles-list"></div>
+      <p class="roles-summary" id="roles-error" style="color:#b87a6a;opacity:0;">Configuration invalide</p>
+      <button class="btn-primary" id="launch-btn" onclick="launchGame()">Lancer la partie</button>
+    </div>
+  </div>
+
+  <!-- ══ ATTENTE JOUEURS (MDJ) ══ -->
+  <div id="s-waiting-host" class="screen">
+    <div class="page-header">
+      <button class="back-icon" onclick="cancelCreate()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span class="page-title">En attente des joueurs</span>
+    </div>
+    <div class="page-body centered" style="gap:24px;">
+      <p class="waiting-text">Joueurs connectés</p>
+      <div class="player-chips" id="waiting-chips"></div>
+      <p class="waiting-text" id="waiting-count-text"></p>
+      <div class="loading-dot">···</div>
+    </div>
+  </div>
+
+  <!-- ══ ATTENTE (JOUEUR) ══ -->
+  <div id="s-waiting-player" class="screen">
+    <div class="page-body centered" style="gap:24px;">
+      <p class="waiting-text">Partie en cours de création</p>
+      <div class="loading-dot">···</div>
+      <p class="waiting-text" id="waiting-player-name" style="color:var(--text);font-size:16px;letter-spacing:2px;"></p>
+    </div>
+  </div>
+
+  <!-- ══ MOT DU JOUEUR ══ -->
+  <div id="s-word" class="screen">
+    <div class="page-body centered" style="gap:16px; justify-content:center;">
+      <p class="section-label" id="word-greeting"></p>
+      <p class="big-word" id="player-word"></p>
+      <p class="big-role" id="player-role-label"></p>
+    </div>
+  </div>
+
+  <!-- ══ PARTIE EN COURS (MDJ) ══ -->
+  <div id="s-in-game" class="screen">
+    <div class="page-header">
+      <span class="page-title">Partie en cours</span>
+    </div>
+    <div class="page-body" style="gap:16px;">
+      <div class="card" style="text-align:center;">
+        <p class="section-label">Joueurs restants</p>
+        <div class="player-chips" id="ingame-chips" style="margin-top:12px;"></div>
+      </div>
+      <button class="btn-ghost" onclick="showVote()">Vote</button>
+      <button class="btn-danger" onclick="showEndChoice()">Fin de partie</button>
+    </div>
+  </div>
+
+  <!-- ══ VOTE (MDJ) ══ -->
+  <div id="s-vote" class="screen">
+    <div class="page-header">
+      <button class="back-icon" onclick="show('s-in-game')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span class="page-title">Éliminer un joueur</span>
+    </div>
+    <div class="page-body" style="gap:10px;" id="vote-list"></div>
+  </div>
+
+  <!-- ══ ÉLIMINATION RÉVÉLÉE (MDJ) ══ -->
+  <div id="s-elim-reveal" class="screen">
+    <div class="page-body centered" style="gap:20px;">
+      <p class="section-label">Éliminé</p>
+      <p class="elim-name" id="elim-name"></p>
+      <p class="elim-role" id="elim-role"></p>
+      <div class="countdown-ring" id="elim-countdown">10</div>
+    </div>
+  </div>
+
+  <!-- ══ ÉCRAN ÉLIMINÉ (JOUEUR) ══ -->
+  <div id="s-eliminated" class="screen">
+    <div class="page-body centered" style="gap:16px;">
+      <p class="section-label">Tu as été éliminé</p>
+      <p class="big-word" style="font-size:36px;color:var(--muted);">Éliminé</p>
+      <p class="waiting-text" style="margin-top:16px;">La partie continue…</p>
+      <div class="loading-dot">···</div>
+    </div>
+  </div>
+
+  <!-- ══ CHOIX ÉQUIPE GAGNANTE (MDJ) ══ -->
+  <div id="s-end-choice" class="screen">
+    <div class="page-header">
+      <button class="back-icon" onclick="show('s-in-game')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span class="page-title">Fin de partie</span>
+    </div>
+    <div class="page-body" style="gap:12px;">
+      <p class="section-label" style="text-align:center;">Qui a gagné ?</p>
+      <button class="btn-ghost" style="border-color:#4a8c5c;color:#6ab87a;" onclick="endGame('ally')">Alliés</button>
+      <button class="btn-ghost" style="border-color:#8c4a4a;color:#b87a6a;" onclick="endGame('enemy')">Imposteurs</button>
+      <button class="btn-ghost" style="border-color:#c9a040;color:#d4b060;" id="end-white-btn" onclick="endGame('white')">Mister White</button>
+    </div>
+  </div>
+
+  <!-- ══ RÉSULTAT FINAL (JOUEUR + MDJ) ══ -->
+  <div id="s-result" class="screen">
+    <div class="page-body centered" style="gap:16px;">
+      <p class="winner-label" id="result-label"></p>
+      <p class="win-text" id="result-text"></p>
+      <div class="countdown-ring" id="result-countdown">10</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgP0hd88OZc_WWGsS0kAUBOumAXeos07I",
+      authDomain: "blog-cdm.firebaseapp.com",
+      projectId: "blog-cdm",
+      storageBucket: "blog-cdm.firebasestorage.app",
+      messagingSenderId: "727621219684",
+      appId: "1:727621219684:web:a4717bf808b7ea8fb8b671"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    const ROOM_REF = doc(db, 'undercover', 'room');
+
+    const USERS = {
+      "1111": { name:"Utilisateur 1", color:"#e05c5c" },
+      "2222": { name:"Utilisateur 2", color:"#e08c3a" },
+      "3333": { name:"Utilisateur 3", color:"#d4c137" },
+      "4444": { name:"Utilisateur 4", color:"#5cb85c" },
+      "5555": { name:"Utilisateur 5", color:"#3ab8b8" },
+      "6666": { name:"Utilisateur 6", color:"#5c8de0" },
+      "7777": { name:"Utilisateur 7", color:"#a05ce0" },
+      "8888": { name:"Utilisateur 8", color:"#e05ca8" },
+    };
+    const ADMIN_CODE = "0000";
+
+    // ── Utilisateur courant ──
+    const savedCode = localStorage.getItem('cdm_user_code');
+    if (!savedCode || (!USERS[savedCode] && savedCode !== ADMIN_CODE)) {
+      window.location.href = '../';
+    }
+    const currentUser = savedCode === ADMIN_CODE
+      ? { code: ADMIN_CODE, name: "Admin", color: "#fff" }
+      : { code: savedCode, ...USERS[savedCode] };
+
+    // ── État local ──
+    let playerCount   = 4;
+    let pendingRoles  = {}; // { userCode: 'ally'|'enemy'|'white' }
+    let roomUnsub     = null;
+    let isHost        = false;
+    let elimTimer     = null;
+    let resultTimer   = null;
+
+    // ── Navigation ──
+    window.show = function(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    };
+
+    // ══════════════════════════════
+    // ACCUEIL
+    // ══════════════════════════════
+    async function initHome() {
+      const snap = await getDoc(ROOM_REF);
+      const status = document.getElementById('home-status');
+      const joinBtn = document.getElementById('join-btn');
+
+      if (snap.exists() && snap.data().status !== 'finished') {
+        const room = snap.data();
+        const playerNames = Object.values(room.players || {}).map(p => p.name).join(', ');
+        status.innerHTML = `<div class="card" style="text-align:center;margin-bottom:8px;">
+          <p class="section-label">Partie en cours</p>
+          <p style="font-family:'Barlow Condensed',sans-serif;font-size:14px;color:var(--muted);margin-top:6px;">${playerNames}</p>
+        </div>`;
+        joinBtn.style.display = 'block';
+      } else {
+        status.innerHTML = '';
+        joinBtn.style.display = 'none';
+      }
+    }
+
+    // ══════════════════════════════
+    // CRÉER UNE PARTIE
+    // ══════════════════════════════
+    window.createRoom = async function() {
+      // Vérifie qu'aucune room n'existe
+      const snap = await getDoc(ROOM_REF);
+      if (snap.exists() && snap.data().status !== 'finished') {
+        alert('Une partie est déjà en cours. Attends qu\'elle soit terminée.');
+        return;
+      }
+      isHost = true;
+      playerCount = 4;
+      document.getElementById('count-display').textContent = playerCount;
+      show('s-setup-count');
+    };
+
+    window.changeCount = function(delta) {
+      playerCount = Math.min(10, Math.max(3, playerCount + delta));
+      document.getElementById('count-display').textContent = playerCount;
+    };
+
+    window.goToWords = function() {
+      show('s-setup-words');
+    };
+
+    // Validation mots en temps réel
+    const wordAlly  = document.getElementById('word-ally');
+    const wordEnemy = document.getElementById('word-enemy');
+    const wordsBtn  = document.getElementById('words-next-btn');
+
+    function checkWords() {
+      wordsBtn.disabled = !(wordAlly.value.trim() && wordEnemy.value.trim());
+    }
+    wordAlly.addEventListener('input', checkWords);
+    wordEnemy.addEventListener('input', checkWords);
+
+    window.goToRoles = async function() {
+      // Crée la room en attente de joueurs
+      await setDoc(ROOM_REF, {
+        status:      'waiting',
+        host:        currentUser.code,
+        playerCount,
+        wordAlly:    wordAlly.value.trim(),
+        wordEnemy:   wordEnemy.value.trim(),
+        players:     {},
+        roles:       {},
+        eliminated:  [],
+        createdAt:   serverTimestamp()
+      });
+
+      pendingRoles = {};
+      show('s-waiting-host');
+      listenRoom();
+    };
+
+    // ══════════════════════════════
+    // ATTENTE JOUEURS (HOST)
+    // ══════════════════════════════
+    function updateWaitingHost(room) {
+      const players = room.players || {};
+      const joined  = Object.values(players);
+      const chips   = document.getElementById('waiting-chips');
+      chips.innerHTML = joined.map(p =>
+        `<span class="player-chip-item joined" style="border-color:${p.color}33;color:${p.color}">${p.name}</span>`
+      ).join('');
+      document.getElementById('waiting-count-text').textContent =
+        `${joined.length} / ${room.playerCount} joueur${joined.length > 1 ? 's' : ''}`;
+
+      if (joined.length >= room.playerCount) {
+        // Tous les joueurs ont rejoint — aller à la config des rôles
+        buildRolesScreen(room);
+        show('s-setup-roles');
+      }
+    }
+
+    function buildRolesScreen(room) {
+      const players = room.players || {};
+      const list = document.getElementById('roles-list');
+      list.innerHTML = '';
+      pendingRoles = {};
+
+      Object.entries(players).forEach(([code, p]) => {
+        pendingRoles[code] = 'ally'; // défaut allié
+
+        const hasMrWhite = room.playerCount >= 4;
+        const row = document.createElement('div');
+        row.className = 'role-row';
+        row.innerHTML = `
+          <span class="role-player-name" style="color:${p.color}">${p.name}</span>
+          <div class="role-selector">
+            <button class="role-chip active-ally" data-code="${code}" data-role="ally" onclick="setRole('${code}','ally',this)">Allié</button>
+            <button class="role-chip" data-code="${code}" data-role="enemy" onclick="setRole('${code}','enemy',this)">Imposteur</button>
+            ${hasMrWhite ? `<button class="role-chip" data-code="${code}" data-role="white" onclick="setRole('${code}','white',this)">M.White</button>` : ''}
+          </div>
+        `;
+        list.appendChild(row);
+      });
+
+      updateRolesSummary(room.playerCount);
+    }
+
+    window.setRole = function(code, role, btn) {
+      pendingRoles[code] = role;
+      // Reset chips de cette ligne
+      btn.closest('.role-selector').querySelectorAll('.role-chip').forEach(c => {
+        c.classList.remove('active-ally','active-enemy','active-white');
+      });
+      btn.classList.add(`active-${role}`);
+      updateRolesSummary(playerCount);
+    };
+
+    function updateRolesSummary(total) {
+      const counts = Object.values(pendingRoles).reduce((acc, r) => {
+        acc[r] = (acc[r] || 0) + 1; return acc;
+      }, {});
+      const allies   = counts.ally  || 0;
+      const enemies  = counts.enemy || 0;
+      const whites   = counts.white || 0;
+
+      // Règles de validation
+      const maxEnemies = total <= 5 ? 1 : total <= 7 ? Math.floor(total / 2) - 1 : 4;
+      const valid = allies > enemies && enemies >= 1 && whites <= 1 &&
+                    (allies + enemies + whites) === Object.keys(pendingRoles).length;
+
+      const summary = `${allies} allié${allies>1?'s':''} · ${enemies} imposteur${enemies>1?'s':''} ${whites ? `· 1 Mister White` : ''}`;
+      document.getElementById('roles-summary').innerHTML = `<span class="${valid ? 'ok' : 'warn'}">${summary}</span>`;
+      document.getElementById('roles-error').style.opacity = valid ? '0' : '1';
+      document.getElementById('launch-btn').disabled = !valid;
+    }
+
+    window.launchGame = async function() {
+      await updateDoc(ROOM_REF, {
+        status: 'playing',
+        roles:  pendingRoles
+      });
+      show('s-in-game');
+      renderInGame();
+    };
+
+    // ══════════════════════════════
+    // REJOINDRE UNE PARTIE
+    // ══════════════════════════════
+    window.joinRoom = async function() {
+      const snap = await getDoc(ROOM_REF);
+      if (!snap.exists()) { alert('Aucune partie disponible.'); return; }
+      const room = snap.data();
+
+      if (room.players && room.players[currentUser.code]) {
+        // Déjà dans la room — reprendre
+        rejoinRoom(room);
+        return;
+      }
+
+      if (Object.keys(room.players || {}).length >= room.playerCount) {
+        alert('La room est pleine.'); return;
+      }
+
+      await updateDoc(ROOM_REF, {
+        [`players.${currentUser.code}`]: { name: currentUser.name, color: currentUser.color }
+      });
+
+      show('s-waiting-player');
+      document.getElementById('waiting-player-name').textContent = currentUser.name;
+      listenRoom();
+    };
+
+    function rejoinRoom(room) {
+      if (room.status === 'playing' || room.status === 'voting') {
+        if (room.eliminated?.includes(currentUser.code)) {
+          show('s-eliminated');
+          listenRoom();
+        } else {
+          showPlayerWord(room);
+          listenRoom();
+        }
+      } else {
+        show('s-waiting-player');
+        listenRoom();
+      }
+    }
+
+    // ══════════════════════════════
+    // ÉCOUTE FIREBASE
+    // ══════════════════════════════
+    function listenRoom() {
+      if (roomUnsub) roomUnsub();
+      roomUnsub = onSnapshot(ROOM_REF, snap => {
+        if (!snap.exists()) { show('s-home'); initHome(); return; }
+        const room = snap.data();
+
+        if (isHost) {
+          handleHostUpdate(room);
+        } else {
+          handlePlayerUpdate(room);
+        }
+      });
+    }
+
+    function handleHostUpdate(room) {
+      if (room.status === 'waiting') updateWaitingHost(room);
+      if (room.status === 'playing') { show('s-in-game'); renderInGame(); }
+      if (room.status === 'voting')  { show('s-in-game'); renderInGame(); }
+      if (room.status === 'finished') {
+        showResultHost(room);
+      }
+    }
+
+    function handlePlayerUpdate(room) {
+      if (room.status === 'waiting') {
+        show('s-waiting-player');
+      }
+      if (room.status === 'playing' || room.status === 'voting') {
+        if (room.eliminated?.includes(currentUser.code)) {
+          show('s-eliminated');
+        } else {
+          showPlayerWord(room);
+        }
+      }
+      if (room.status === 'eliminated_reveal') {
+        const elimCode = room.lastEliminated;
+        if (elimCode === currentUser.code) {
+          show('s-eliminated');
+        }
+      }
+      if (room.status === 'finished') {
+        showResultPlayer(room);
+      }
+    }
+
+    // ══════════════════════════════
+    // MOT DU JOUEUR
+    // ══════════════════════════════
+    function showPlayerWord(room) {
+      const role = room.roles?.[currentUser.code];
+      let word = '';
+      let roleLabel = '';
+      let roleClass = '';
+
+      if (role === 'ally')  { word = room.wordAlly;  roleLabel = 'Allié';       roleClass = 'ally'; }
+      if (role === 'enemy') { word = room.wordEnemy; roleLabel = 'Imposteur';   roleClass = 'enemy'; }
+      if (role === 'white') { word = '???';          roleLabel = 'Mister White'; roleClass = 'white'; }
+
+      document.getElementById('word-greeting').textContent  = `Ton mot, ${currentUser.name}`;
+      document.getElementById('player-word').textContent    = word;
+      document.getElementById('player-role-label').textContent = roleLabel;
+      document.getElementById('player-role-label').className   = `big-role ${roleClass}`;
+      show('s-word');
+    }
+
+    // ══════════════════════════════
+    // PARTIE EN COURS (HOST)
+    // ══════════════════════════════
+    async function renderInGame() {
+      const snap = await getDoc(ROOM_REF);
+      const room = snap.data();
+      const players  = room.players  || {};
+      const eliminated = room.eliminated || [];
+      const active = Object.entries(players).filter(([code]) => !eliminated.includes(code));
+
+      const chips = document.getElementById('ingame-chips');
+      chips.innerHTML = active.map(([code, p]) =>
+        `<span class="player-chip-item joined" style="border-color:${p.color}44;color:${p.color}">${p.name}</span>`
+      ).join('');
+
+      // Afficher/cacher bouton Mister White dans fin de partie
+      const hasWhite = Object.values(room.roles || {}).includes('white');
+      document.getElementById('end-white-btn').style.display = hasWhite ? 'block' : 'none';
+    }
+
+    // ══════════════════════════════
+    // VOTE
+    // ══════════════════════════════
+    window.showVote = async function() {
+      const snap = await getDoc(ROOM_REF);
+      const room = snap.data();
+      const players   = room.players   || {};
+      const eliminated = room.eliminated || [];
+      const active = Object.entries(players).filter(([code]) => !eliminated.includes(code));
+
+      const list = document.getElementById('vote-list');
+      list.innerHTML = '';
+
+      active.forEach(([code, p]) => {
+        const btn = document.createElement('div');
+        btn.className = 'vote-player';
+        btn.innerHTML = `
+          <span class="vote-player-name" style="color:${p.color}">${p.name}</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        `;
+        btn.addEventListener('click', () => confirmElim(code, p.name));
+        list.appendChild(btn);
+      });
+
+      show('s-vote');
+    };
+
+    async function confirmElim(code, name) {
+      if (!confirm(`Éliminer ${name} ?`)) return;
+
+      const snap = await getDoc(ROOM_REF);
+      const room = snap.data();
+      const role = room.roles?.[code] || 'ally';
+      const eliminated = [...(room.eliminated || []), code];
+
+      await updateDoc(ROOM_REF, {
+        status: 'playing',
+        eliminated,
+        lastEliminated: code
+      });
+
+      // Afficher révélation rôle
+      const roleLabels = { ally: 'Allié', enemy: 'Imposteur', white: 'Mister White' };
+      const roleColors = { ally: '#6ab87a', enemy: '#b87a6a', white: '#d4b060' };
+
+      document.getElementById('elim-name').textContent = name;
+      document.getElementById('elim-name').style.color = room.players[code]?.color || '#fff';
+      document.getElementById('elim-role').textContent = roleLabels[role];
+      document.getElementById('elim-role').style.color = roleColors[role];
+
+      show('s-elim-reveal');
+      startCountdown('elim-countdown', 10, () => {
+        show('s-in-game');
+        renderInGame();
+      });
+    }
+
+    // ══════════════════════════════
+    // FIN DE PARTIE
+    // ══════════════════════════════
+    window.showEndChoice = function() { show('s-end-choice'); };
+
+    window.endGame = async function(winner) {
+      await updateDoc(ROOM_REF, { status: 'finished', winner });
+    };
+
+    function showResultHost(room) {
+      const winnerLabels = { ally: 'Alliés', enemy: 'Imposteurs', white: 'Mister White' };
+      document.getElementById('result-label').textContent = `Victoire`;
+      document.getElementById('result-text').textContent  = winnerLabels[room.winner] || '';
+      document.getElementById('result-text').className    = 'win-text won';
+      show('s-result');
+      startCountdown('result-countdown', 10, async () => {
+        await deleteDoc(ROOM_REF);
+        isHost = false;
+        if (roomUnsub) { roomUnsub(); roomUnsub = null; }
+        show('s-home');
+        initHome();
+      });
+    }
+
+    function showResultPlayer(room) {
+      const role    = room.roles?.[currentUser.code];
+      const winner  = room.winner;
+      const won     = role === winner || (winner === 'ally' && role !== 'enemy' && role !== 'white');
+      const winnerLabels = { ally: 'Alliés', enemy: 'Imposteurs', white: 'Mister White' };
+
+      document.getElementById('result-label').textContent = won ? 'Victoire' : 'Défaite';
+      document.getElementById('result-text').textContent  = winnerLabels[winner] || '';
+      document.getElementById('result-text').className    = `win-text ${won ? 'won' : 'lost'}`;
+      show('s-result');
+      startCountdown('result-countdown', 10, () => {
+        if (roomUnsub) { roomUnsub(); roomUnsub = null; }
+        show('s-home');
+        initHome();
+      });
+    }
+
+    // ══════════════════════════════
+    // UTILITAIRES
+    // ══════════════════════════════
+    function startCountdown(elId, seconds, cb) {
+      const el = document.getElementById(elId);
+      let s = seconds;
+      el.textContent = s;
+      const t = setInterval(() => {
+        s--;
+        el.textContent = s;
+        if (s <= 0) { clearInterval(t); cb(); }
+      }, 1000);
+    }
+
+    window.cancelCreate = async function() {
+      if (confirm('Annuler la création de la partie ?')) {
+        await deleteDoc(ROOM_REF);
+        isHost = false;
+        if (roomUnsub) { roomUnsub(); roomUnsub = null; }
+        show('s-home');
+        initHome();
+      }
+    };
+
+    // ══════════════════════════════
+    // INIT
+    // ══════════════════════════════
+    initHome();
+
+    // Reprendre une session en cours si on recharge
+    const snap = await getDoc(ROOM_REF);
+    if (snap.exists()) {
+      const room = snap.data();
+      if (room.host === currentUser.code) {
+        isHost = true;
+        if (room.status === 'playing') { show('s-in-game'); renderInGame(); listenRoom(); }
+        else if (room.status === 'waiting') { show('s-waiting-host'); listenRoom(); }
+      } else if (room.players?.[currentUser.code]) {
+        rejoinRoom(room);
+      }
+    }
+  </script>
+
+</body>
+</html>
