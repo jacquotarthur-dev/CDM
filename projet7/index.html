@@ -527,14 +527,16 @@
   <!-- ══ QUESTION ══ -->
   <div id="s-question" class="screen active">
  
- <div class="q-header">
-      <span class="q-counter" id="q-counter"></span>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button id="delete-btn" style="display:none;background:none;border:none;color:rgba(224,92,92,0.3);font-size:20px;cursor:pointer;line-height:1;padding:4px;" onclick="deleteCurrentQuestion()">×</button>
-        <div class="create-btn" onclick="showCreate()">+</div>
-      </div>
-    </div>
- 
+<div class="q-header">
+  <span class="q-counter" id="q-counter"></span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button id="edit-btn" style="display:none;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;cursor:pointer;" onclick="editCurrentQuestion()">Éditer</button>
+    <button id="delete-btn" style="display:none;background:none;border:none;color:rgba(224,92,92,0.3);font-size:22px;cursor:pointer;line-height:1;padding:4px;" onclick="deleteCurrentQuestion()">×</button>
+    <div class="create-btn" onclick="showCreate()">+</div>
+  </div>
+</div>
+
+    
     <div class="q-title-wrap">
       <p class="q-author" id="q-author"></p>
       <p class="q-title" id="q-title">Chargement…</p>
@@ -789,7 +791,13 @@ qIndex = 0;
       } else {
         imgR.style.display = 'none'; phR.style.display = 'flex';
       }
- 
+ // Boutons éditer/supprimer
+const q = questions[order[qIndex]];
+const canEdit   = currentUser.code === q.authorCode || currentUser.code === ADMIN_CODE;
+const canDelete = currentUser.code === ADMIN_CODE;
+document.getElementById('edit-btn').style.display   = canEdit   ? 'block' : 'none';
+document.getElementById('delete-btn').style.display = canDelete ? 'block' : 'none';
+      
       show('s-question');
     }
  
@@ -866,6 +874,8 @@ qIndex = 0;
         document.getElementById(`prev-${side}`).style.display = 'none';
         document.getElementById(`lbl-${side}`).textContent = 'Image';
       });
+        window._editingId = null;
+    
     }
  
     window.handleImg = async function(input, side) {
@@ -915,37 +925,44 @@ qIndex = 0;
     }
  
   window.submitQuestion = async function() {
-      const title     = document.getElementById('create-title').value.trim();
-      const leftText  = document.getElementById('create-left-text').value.trim();
-      const rightText = document.getElementById('create-right-text').value.trim();
+  const title     = document.getElementById('create-title').value.trim();
+  const leftText  = document.getElementById('create-left-text').value.trim();
+  const rightText = document.getElementById('create-right-text').value.trim();
+
+  if (!leftText || !rightText) {
+    alert('Remplis les deux choix.');
+    return;
+  }
+  const finalTitle = title || 'Tu préfères... ?';
+
+  if (window._editingId) {
+    await updateDoc(doc(db, 'tuPreferes', window._editingId), {
+      title: finalTitle,
+      leftText,
+      rightText,
+      leftImg:  uploadedLeft  || null,
+      rightImg: uploadedRight || null,
+    });
+    window._editingId = null;
+  } else {
+    await addDoc(collection(db, 'tuPreferes'), {
+      title: finalTitle,
+      leftText,
+      rightText,
+      leftImg:    uploadedLeft  || null,
+      rightImg:   uploadedRight || null,
+      authorName:  currentUser.name,
+      authorColor: currentUser.color,
+      authorCode:  currentUser.code,
+      votes:       {},
+      createdAt:   serverTimestamp()
+    });
+  }
+
+  await loadQuestions();
+  showQuestion();
+};
  
-   if (!leftText || !rightText) {
-  alert('Remplis les deux choix.');
-  return;
-}
-const finalTitle = title || 'Tu préfères... ?';
- 
-      await addDoc(collection(db, 'tuPreferes'), {
-        title: finalTitle,
-        leftText,
-        rightText,
-        leftImg:    uploadedLeft  || null,
-        rightImg:   uploadedRight || null,
-        authorName:  currentUser.name,
-        authorColor: currentUser.color,
-        authorCode:  currentUser.code,
-        votes:       {},
-        createdAt:   serverTimestamp()
-      });
- 
-      await loadQuestions();
-      showQuestion();
-    };
- 
-    // ── Affichage bouton suppression admin ──
-    if (currentUser.code === ADMIN_CODE) {
-      document.getElementById('delete-btn').style.display = 'block';
-    }
 
     
 
@@ -958,7 +975,29 @@ const finalTitle = title || 'Tu préfères... ?';
       await loadQuestions();
     };
 
-
+window.editCurrentQuestion = function() {
+  const q = questions[order[qIndex]];
+  window._editingId = q.id;
+  document.getElementById('create-title').value      = q.title;
+  document.getElementById('create-left-text').value  = q.leftText;
+  document.getElementById('create-right-text').value = q.rightText;
+  uploadedLeft  = q.leftImg  || null;
+  uploadedRight = q.rightImg || null;
+  ['left','right'].forEach(side => {
+    const url = side === 'left' ? q.leftImg : q.rightImg;
+    if (url) {
+      document.getElementById(`ph-${side}`).style.display   = 'none';
+      document.getElementById(`prev-${side}`).src           = url;
+      document.getElementById(`prev-${side}`).style.display = 'block';
+      document.getElementById(`lbl-${side}`).textContent    = '✓';
+    } else {
+      document.getElementById(`ph-${side}`).style.display   = 'flex';
+      document.getElementById(`prev-${side}`).style.display = 'none';
+      document.getElementById(`lbl-${side}`).textContent    = 'Image';
+    }
+  });
+  show('s-create');
+};
 
 
  
