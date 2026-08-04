@@ -468,12 +468,12 @@
       if (toAdd > 1800) { err.style.opacity = '1'; return; }
       err.style.opacity = '0';
  
-      await runTransaction(db, async (transaction) => {
-        const snap = await transaction.get(counterRef);
-        const current = snap.exists() ? snap.data().totalSeconds || 0 : 0;
-        transaction.set(counterRef, { totalSeconds: current + toAdd });
-      });
- 
+ await runTransaction(db, async (transaction) => {
+  const snap = await transaction.get(counterRef);
+  const current = snap.exists() ? (snap.data().totalSeconds || 0) : 0;
+  const newTotal = Math.max(current, current + toAdd);
+  transaction.set(counterRef, { totalSeconds: newTotal });
+});
       toggleEditor();
     };
   </script>
