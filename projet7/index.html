@@ -766,7 +766,7 @@ qIndex = 0;
  
     // ── Rendu question ──
     function renderQuestion() {
-    
+    const q = questions[order[qIndex]];
  
       document.getElementById('q-counter').textContent = `${qIndex + 1} / ${questions.length}`;
       document.getElementById('q-author').textContent  = `par ${q.authorName}`;
@@ -792,7 +792,7 @@ qIndex = 0;
         imgR.style.display = 'none'; phR.style.display = 'flex';
       }
  // Boutons éditer/supprimer
-const q = questions[order[qIndex]];
+
 const canEdit   = currentUser.code === q.authorCode || currentUser.code === ADMIN_CODE;
 const canDelete = currentUser.code === ADMIN_CODE;
 document.getElementById('edit-btn').style.display   = canEdit   ? 'block' : 'none';
