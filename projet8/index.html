@@ -932,8 +932,8 @@
       let roleLabel = '';
       let roleClass = '';
 
-      if (role === 'ally')  { word = room.wordAlly;  roleLabel = 'Allié';       roleClass = 'ally'; }
-      if (role === 'enemy') { word = room.wordEnemy; roleLabel = 'Imposteur';   roleClass = 'enemy'; }
+      if (role === 'ally')  { word = room.wordAlly;  roleLabel = ''; roleClass = 'ally'; }
+      if (role === 'enemy') { word = room.wordEnemy; roleLabel = ''; roleClass = 'enemy'; }
       if (role === 'white') { word = '???';          roleLabel = 'Mister White'; roleClass = 'white'; }
 
       document.getElementById('word-greeting').textContent  = `Ton mot, ${currentUser.name}`;
