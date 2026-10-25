@@ -1,1 +1,625 @@
-
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="color-scheme" content="dark" />
+  <title>Malaise TV</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600&family=Barlow:wght@300;400&display=swap');
+ 
+    :root {
+      --bg:      #080808;
+      --surface: #141414;
+      --border:  #1e1e1e;
+      --text:    #efefef;
+      --muted:   #555;
+    }
+ 
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+ 
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      min-height: 100dvh;
+    }
+ 
+    /* ══ ÉCRANS ══ */
+    .screen { display:none; flex-direction:column; min-height:100dvh; }
+    .screen.active { display:flex; }
+ 
+    /* ══ HUB DOSSIERS ══ */
+    .page-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky; top:0;
+      background: var(--bg);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+ 
+    .page-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      flex: 1;
+    }
+ 
+    .back-icon {
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      display: flex; flex-shrink: 0;
+      text-decoration: none;
+    }
+ 
+    .page-body {
+      flex: 1;
+      padding: 20px 16px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+ 
+    /* Dossiers */
+    .folder-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+ 
+    .folder-card:active { border-color: #333; }
+ 
+    .folder-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 20px;
+    }
+ 
+    .folder-info { flex: 1; }
+ 
+    .folder-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: .3px;
+    }
+ 
+    .folder-count {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+      letter-spacing: .5px;
+    }
+ 
+    /* ══ LISTE VIDÉOS ══ */
+    .video-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+ 
+    .video-thumb {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+    }
+ 
+    .thumb-img {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      object-fit: cover;
+      background: var(--surface);
+      display: block;
+    }
+ 
+    .thumb-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: .3px;
+      line-height: 1.2;
+    }
+ 
+    /* ══ PLAYER ══ */
+    #s-player {
+      background: #000;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      min-height: 100dvh;
+      display: none;
+    }
+ 
+    #s-player.active { display: flex; }
+ 
+    video#main-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+ 
+    /* Overlay contrôles */
+    .controls-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.55) 0%,
+        transparent 30%,
+        transparent 60%,
+        rgba(0,0,0,0.7) 100%
+      );
+      opacity: 1;
+      transition: opacity .5s ease;
+      z-index: 10;
+    }
+ 
+    .controls-overlay.hidden { opacity: 0; pointer-events: none; }
+ 
+    /* Header player */
+    .player-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 16px 0;
+      padding-top: max(16px, env(safe-area-inset-top));
+    }
+ 
+    .player-back {
+      background: none; border: none;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+      display: flex; flex-shrink: 0;
+    }
+ 
+    .player-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: .5px;
+      flex: 1;
+    }
+ 
+    /* Contrôles centraux */
+    .player-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+    }
+ 
+    .ctrl-btn {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.85);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+    }
+ 
+    .ctrl-btn:active { opacity: .6; }
+ 
+    .play-btn {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+ 
+    /* Barre de progression */
+    .player-bottom {
+      padding: 0 16px max(16px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+ 
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+ 
+    .time-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 1px;
+      white-space: nowrap;
+      min-width: 38px;
+    }
+ 
+    .progress-bar {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 3px;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      outline: none;
+    }
+ 
+    .progress-bar::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      margin-top: -5.5px;
+    }
+ 
+    .progress-bar::-webkit-slider-runnable-track {
+      height: 3px;
+      border-radius: 3px;
+      background: linear-gradient(to right, #fff var(--p, 0%), rgba(255,255,255,0.2) var(--p, 0%));
+    }
+ 
+    /* Nav vidéos bas */
+    .player-nav {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      align-items: center;
+    }
+ 
+    .nav-btn {
+      background: none; border: none;
+      color: rgba(255,255,255,0.5);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+    }
+ 
+    .nav-btn:disabled { opacity: .25; cursor: default; }
+    .nav-btn:active:not(:disabled) { opacity: .6; }
+ 
+    /* Retour flèche bas */
+    .back-fixed {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,.12);
+      display: flex;
+      text-decoration: none;
+      z-index: 50;
+    }
+  </style>
+</head>
+<body>
+ 
+  <!-- ══ HUB DOSSIERS ══ -->
+  <div id="s-hub" class="screen active">
+    <div class="page-header">
+      <a class="back-icon" href="../">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </a>
+      <span class="page-title">Vidéos</span>
+    </div>
+    <div class="page-body" id="folders-list"></div>
+    <a class="back-fixed" href="../">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </a>
+  </div>
+ 
+  <!-- ══ LISTE VIDÉOS ══ -->
+  <div id="s-folder" class="screen">
+    <div class="page-header">
+      <button class="back-icon" onclick="show('s-hub')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <span class="page-title" id="folder-title"></span>
+    </div>
+    <div class="page-body">
+      <div class="video-grid" id="video-grid"></div>
+    </div>
+  </div>
+ 
+  <!-- ══ PLAYER ══ -->
+  <div id="s-player" class="screen">
+    <video id="main-video" playsinline preload="metadata"></video>
+ 
+    <div class="controls-overlay" id="controls-overlay">
+ 
+      <div class="player-top">
+        <button class="player-back" onclick="closePlayer()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+        </button>
+        <span class="player-title" id="player-title"></span>
+      </div>
+ 
+      <div class="player-center">
+        <button class="ctrl-btn" onclick="skip(-10)">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 17l-5-5 5-5"/>
+            <path d="M18 17l-5-5 5-5"/>
+          </svg>
+        </button>
+        <button class="ctrl-btn play-btn" id="play-pause-btn" onclick="togglePlay()">
+          <svg id="play-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+        <button class="ctrl-btn" onclick="skip(10)">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 17l5-5-5-5"/>
+            <path d="M6 17l5-5-5-5"/>
+          </svg>
+        </button>
+      </div>
+ 
+      <div class="player-bottom">
+        <div class="progress-wrap">
+          <span class="time-label" id="time-current">0:00</span>
+          <input type="range" class="progress-bar" id="progress-bar" min="0" max="100" value="0" step="0.1" oninput="seekTo(this.value)" />
+          <span class="time-label" style="text-align:right" id="time-total">0:00</span>
+        </div>
+        <div class="player-nav">
+          <button class="nav-btn" id="prev-btn" onclick="prevVideo()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>
+            </svg>
+          </button>
+          <button class="nav-btn" id="next-btn" onclick="nextVideo()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 18l8.5-6L6 6v12zm2.5-6 8.5 6V6z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+ 
+    </div>
+  </div>
+ 
+  <script>
+    // ─────────────────────────────────────────────
+    // CATALOGUE — édite uniquement cette section
+    // Pour chaque vidéo, "url" = lien direct archive.org
+    // "thumb" = miniature (url ou chemin local)
+    // ─────────────────────────────────────────────
+    const FOLDERS = [
+      {
+        name: "Corfou, l'île des foufous",
+        emoji: "🏺",
+        videos: [
+          {
+            title: "Jour 1 - Corfou, l'île des foufous",
+            thumb: "https://randompicturegenerator.com/img/picture-generator/brushes-1683134_640.jpg",
+            url:   "https://ia601607.us.archive.org/7/items/Corfou1/20%20Avril.mp4"
+          },
+          // Ajoute d'autres vidéos ici :
+          // { title: "Titre", thumb: "url_miniature", url: "url_video" },
+        ]
+      },
+      // Ajoute un dossier comme ça :
+      // {
+      //   name: "Dossier 2",
+      //   emoji: "🎥",
+      //   videos: [...]
+      // },
+    ];
+    // ─────────────────────────────────────────────
+ 
+    // Vérif accès hub
+    if (!localStorage.getItem('cdm_user_code')) {
+      window.location.href = '../';
+    }
+ 
+    // ── État ──
+    let currentFolder = null;
+    let currentVideoIdx = 0;
+    let hideTimer = null;
+ 
+    const video   = document.getElementById('main-video');
+    const overlay = document.getElementById('controls-overlay');
+    const progress = document.getElementById('progress-bar');
+ 
+    // ── Navigation ──
+    function show(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+ 
+    // ── Build hub dossiers ──
+    const foldersList = document.getElementById('folders-list');
+    FOLDERS.forEach((folder, fi) => {
+      const card = document.createElement('div');
+      card.className = 'folder-card';
+      card.innerHTML = `
+        <div class="folder-icon">${folder.emoji}</div>
+        <div class="folder-info">
+          <div class="folder-name">${folder.name}</div>
+          <div class="folder-count">${folder.videos.length} vidéo${folder.videos.length > 1 ? 's' : ''}</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      `;
+      card.addEventListener('click', () => openFolder(fi));
+      foldersList.appendChild(card);
+    });
+ 
+    // ── Ouvrir dossier ──
+    function openFolder(fi) {
+      currentFolder = fi;
+      const folder = FOLDERS[fi];
+      document.getElementById('folder-title').textContent = folder.name;
+ 
+      const grid = document.getElementById('video-grid');
+      grid.innerHTML = '';
+ 
+      folder.videos.forEach((v, vi) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'video-thumb';
+        thumb.innerHTML = `
+          <img class="thumb-img" src="${v.thumb}" alt="${v.title}"
+            onerror="this.style.background='#1a1a1a'" />
+          <span class="thumb-title">${v.title}</span>
+        `;
+        thumb.addEventListener('click', () => openVideo(vi));
+        grid.appendChild(thumb);
+      });
+ 
+      show('s-folder');
+    }
+ 
+    // ── Ouvrir vidéo ──
+    function openVideo(vi) {
+      currentVideoIdx = vi;
+      const v = FOLDERS[currentFolder].videos[vi];
+ 
+      document.getElementById('player-title').textContent = v.title;
+      video.src = v.url;
+      video.load();
+      video.play();
+      updatePlayIcon(true);
+      updateNavBtns();
+      show('s-player');
+      showControls();
+    }
+ 
+    // ── Fermer player ──
+    window.closePlayer = function() {
+      video.pause();
+      video.src = '';
+      clearTimeout(hideTimer);
+      show('s-folder');
+    };
+ 
+    // ── Play / Pause ──
+    window.togglePlay = function() {
+      if (video.paused) { video.play(); updatePlayIcon(true); }
+      else              { video.pause(); updatePlayIcon(false); }
+      showControls();
+    };
+ 
+    function updatePlayIcon(playing) {
+      document.getElementById('play-icon').innerHTML = playing
+        ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'
+        : '<path d="M8 5v14l11-7z"/>';
+    }
+ 
+    // ── Skip ──
+    window.skip = function(s) {
+      video.currentTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + s));
+      showControls();
+    };
+ 
+    // ── Seek ──
+    window.seekTo = function(val) {
+      if (video.duration) video.currentTime = (val / 100) * video.duration;
+      showControls();
+    };
+ 
+    // ── Vidéo suivante / précédente ──
+    window.nextVideo = function() {
+      const folder = FOLDERS[currentFolder];
+      if (currentVideoIdx < folder.videos.length - 1) openVideo(currentVideoIdx + 1);
+    };
+ 
+    window.prevVideo = function() {
+      if (video.currentTime > 3) { video.currentTime = 0; showControls(); return; }
+      if (currentVideoIdx > 0) openVideo(currentVideoIdx - 1);
+    };
+ 
+    function updateNavBtns() {
+      const folder = FOLDERS[currentFolder];
+      document.getElementById('prev-btn').disabled = currentVideoIdx === 0;
+      document.getElementById('next-btn').disabled = currentVideoIdx === folder.videos.length - 1;
+    }
+ 
+    // ── Progression ──
+    video.addEventListener('timeupdate', () => {
+      if (!video.duration) return;
+      const pct = (video.currentTime / video.duration) * 100;
+      progress.value = pct;
+      progress.style.setProperty('--p', pct + '%');
+      document.getElementById('time-current').textContent = fmt(video.currentTime);
+    });
+ 
+    video.addEventListener('loadedmetadata', () => {
+      document.getElementById('time-total').textContent = fmt(video.duration);
+    });
+ 
+    video.addEventListener('ended', () => {
+      updatePlayIcon(false);
+      showControls();
+      const folder = FOLDERS[currentFolder];
+      if (currentVideoIdx < folder.videos.length - 1) {
+        setTimeout(() => nextVideo(), 1500);
+      }
+    });
+ 
+    video.addEventListener('pause', () => updatePlayIcon(false));
+    video.addEventListener('play',  () => updatePlayIcon(true));
+ 
+    function fmt(s) {
+      if (isNaN(s)) return '0:00';
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60).toString().padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+ 
+    // ── Affichage/masquage contrôles ──
+    function showControls() {
+      overlay.classList.remove('hidden');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => {
+        if (!video.paused) overlay.classList.add('hidden');
+      }, 5000);
+    }
+ 
+    // Touch pour réafficher les contrôles
+    document.getElementById('s-player').addEventListener('touchstart', () => {
+      if (overlay.classList.contains('hidden')) {
+        showControls();
+      }
+    }, { passive: true });
+  </script>
+ 
+</body>
+</html>
