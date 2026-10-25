@@ -515,8 +515,9 @@
       document.getElementById('player-title').textContent = v.title;
       video.src = v.url;
       video.load();
-      video.play();
-      updatePlayIcon(true);
+      video.addEventListener('canplaythrough', () => video.play(), { once: true });
+      updatePlayIcon(false); // reste sur pause le temps du buffer
+     
       updateNavBtns();
       show('s-player');
       showControls();
